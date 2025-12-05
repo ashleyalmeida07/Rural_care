@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Image for Analysis{% endblock %}
+
+{% block content %}
+<div class="fade-in max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">Upload Image for Analysis</h1>
+        <p class="text-gray-600">Upload X-ray, CT scan, MRI, or tumor images for OpenCV-based cancer detection</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Image Type Selection -->
+            <div>
+                <label for="image_type" class="block text-sm font-medium text-gray-700 mb-2">
+                    Image Type
+                </label>
+                <select name="image_type" id="image_type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    {% for value, label in image_types %}
+                        <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <p class="mt-1 text-sm text-gray-500">Select the type of medical image you're uploading</p>
+            </div>
+
+            <!-- File Upload -->
+            <div>
+                <label for="image" class="block text-sm font-medium text-gray-700 mb-2">
+                    Select Image
+                </label>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-indigo-500 transition">
+                    <div class="space-y-1 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <div class="flex text-sm text-gray-600">
+                            <label for="image" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                <span>Upload a file</span>
+                                <input id="image" name="image" type="file" accept="image/*" required class="sr-only">
+                            </label>
+                            <p class="pl-1">or drag and drop</p>
+                        </div>
+                        <p class="text-xs text-gray-500">PNG, JPG, JPEG, BMP, TIFF up to 10MB</p>
+                    </div>
+                </div>
+                <div id="image-preview" class="mt-4 hidden">
+                    <img id="preview-img" src="" alt="Preview" class="max-w-full h-auto rounded-lg shadow-md">
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center">
+                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Analyze Image
+                </button>
+                <a href="{% url 'cancer_detection:dashboard' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-3 px-6 rounded-lg transition duration-200">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Information Box -->
+    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-blue-900 mb-2">About OpenCV-Based Analysis</h3>
+        <ul class="list-disc list-inside text-blue-800 space-y-1">
+            <li>Uses traditional computer vision techniques (edge detection, contour analysis, texture analysis)</li>
+            <li>Analyzes tumor characteristics: size, shape, texture, and location</li>
+            <li>Provides tumor type classification, staging, and genetic profile indicators</li>
+            <li>Detects potential comorbidities and complications</li>
+            <li><strong>Note:</strong> This is a demonstration system. Always consult with medical professionals for actual diagnosis.</li>
+        </ul>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Image preview
+    document.getElementById('image').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('preview-img').src = e.target.result;
+                document.getElementById('image-preview').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}
+

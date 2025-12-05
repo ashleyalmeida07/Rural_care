@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'authentication',
+    'cancer_detection',
 ]
 
 MIDDLEWARE = [
@@ -150,3 +151,7 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 # Custom user model
 AUTH_USER_MODEL = 'authentication.User'
+
+# Media files (uploaded images)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
