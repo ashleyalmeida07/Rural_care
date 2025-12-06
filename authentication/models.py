@@ -214,3 +214,59 @@ class DoctorKYC(models.Model):
         db_table = 'doctor_kyc'
         verbose_name = 'Doctor KYC'
         verbose_name_plural = 'Doctor KYCs'
+
+
+class MedicalRecord(models.Model):
+    """Model for storing patient medical records with OCR capabilities"""
+    RECORD_TYPE_CHOICES = [
+        ('lab_report', 'Laboratory Report'),
+        ('radiology', 'Radiology Report'),
+        ('pathology', 'Pathology Report'),
+        ('biopsy', 'Biopsy Report'),
+        ('blood_test', 'Blood Test'),
+        ('genetic_test', 'Genetic Test'),
+        ('prescription', 'Prescription'),
+        ('discharge_summary', 'Discharge Summary'),
+        ('consultation', 'Consultation Notes'),
+        ('other', 'Other'),
+    ]
+    
+    OCR_STATUS_CHOICES = [
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='medical_records')
+    
+    # Record Information
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+    record_type = models.CharField(max_length=20, choices=RECORD_TYPE_CHOICES, default='other')
+    file = models.FileField(upload_to='medical_records/%Y/%m/%d/')
+    file_size = models.IntegerField(null=True, blank=True)
+    
+    # OCR Related Fields
+    extracted_text = models.TextField(blank=True, null=True)
+    extracted_data = models.JSONField(blank=True, null=True)  # Structured data extracted from OCR
+    ocr_status = models.CharField(max_length=20, choices=OCR_STATUS_CHOICES, default='processing')
+    ocr_confidence = models.FloatField(null=True, blank=True)  # OCR confidence score (0-100)
+    
+    # Metadata
+    report_date = models.DateField(null=True, blank=True)
+    hospital_name = models.CharField(max_length=200, blank=True, null=True)
+    doctor_name = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.title} - {self.patient.username}"
+    
+    class Meta:
+        db_table = 'medical_records'
+        ordering = ['-created_at']
+        verbose_name = 'Medical Record'
+        verbose_name_plural = 'Medical Records'

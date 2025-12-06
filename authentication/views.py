@@ -6,9 +6,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .supabase_client import get_supabase_client
-from .models import User, PatientProfile, DoctorProfile, DoctorKYC
+from .models import User, PatientProfile, DoctorProfile, DoctorKYC, MedicalRecord
+from .forms import DoctorProfileForm, MedicalRecordForm
 import json
+import os
+import re
+import threading
 from datetime import datetime
+from django.conf import settings
 
 def home(request):
     """Home page"""
@@ -310,4 +315,454 @@ def kyc_preview(request):
         'doctor_profile': doctor_profile,
     }
     
-    return render(request, 'authentication/kyc_preview.html', context)
+    return render(request, 'authentication/kyc_preview.html', context)# Medical Records Views
+def medical_records_list(request):
+    """List all medical records for the patient"""
+    if not request.user.is_authenticated or request.user.user_type != 'patient':
+        messages.error(request, 'Please login as a patient to access medical records.')
+        return redirect('patient_login')
+    
+    records = MedicalRecord.objects.filter(patient=request.user).order_by('-created_at')
+    
+    # Calculate stats
+    total_records = records.count()
+    completed_records = records.filter(ocr_status='completed').count()
+    processing_records = records.filter(ocr_status='processing').count()
+    
+    context = {
+        'records': records,
+        'total_records': total_records,
+        'completed_records': completed_records,
+        'processing_records': processing_records,
+    }
+    return render(request, 'authentication/medical_records_list.html', context)
+
+
+def upload_medical_record(request):
+    """Upload a new medical record"""
+    if not request.user.is_authenticated or request.user.user_type != 'patient':
+        messages.error(request, 'Please login as a patient to upload medical records.')
+        return redirect('patient_login')
+    
+    if request.method == 'POST':
+        form = MedicalRecordForm(request.POST, request.FILES)
+        if form.is_valid():
+            record = form.save(commit=False)
+            record.patient = request.user
+            
+            # Store file size
+            if record.file:
+                record.file_size = record.file.size
+            
+            record.save()
+            
+            # Start OCR processing in background
+            thread = threading.Thread(target=process_ocr, args=(record.id,))
+            thread.daemon = True
+            thread.start()
+            
+            messages.success(request, 'Medical record uploaded successfully! OCR processing started.')
+            return redirect('medical_record_detail', record_id=record.id)
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = MedicalRecordForm()
+    
+    return render(request, 'authentication/upload_medical_record.html', {'form': form})
+
+
+def medical_record_detail(request, record_id):
+    """View details of a specific medical record"""
+    if not request.user.is_authenticated or request.user.user_type != 'patient':
+        messages.error(request, 'Please login as a patient to view medical records.')
+        return redirect('patient_login')
+    
+    try:
+        record = MedicalRecord.objects.get(id=record_id, patient=request.user)
+    except MedicalRecord.DoesNotExist:
+        messages.error(request, 'Medical record not found.')
+        return redirect('medical_records_list')
+    
+    context = {
+        'record': record,
+    }
+    return render(request, 'authentication/medical_record_detail.html', context)
+
+
+def delete_medical_record(request, record_id):
+    """Delete a medical record"""
+    if not request.user.is_authenticated or request.user.user_type != 'patient':
+        messages.error(request, 'Please login as a patient to delete medical records.')
+        return redirect('patient_login')
+    
+    try:
+        record = MedicalRecord.objects.get(id=record_id, patient=request.user)
+        
+        # Delete the file from storage
+        if record.file:
+            try:
+                if os.path.exists(record.file.path):
+                    os.remove(record.file.path)
+            except Exception as e:
+                print(f"Error deleting file: {e}")
+        
+        # Delete the record from database
+        record_title = record.title
+        record.delete()
+        
+        messages.success(request, f'Medical record "{record_title}" has been deleted successfully.')
+    except MedicalRecord.DoesNotExist:
+        messages.error(request, 'Medical record not found.')
+    
+    return redirect('medical_records_list')
+
+
+def process_ocr(record_id):
+    """Process OCR on uploaded medical record"""
+    try:
+        record = MedicalRecord.objects.get(id=record_id)
+        file_path = record.file.path
+        file_ext = os.path.splitext(file_path)[1].lower()
+        
+        extracted_text = ""
+        
+        # Check if Tesseract is available
+        try:
+            import pytesseract
+            from PIL import Image
+            tesseract_available = True
+        except ImportError:
+            tesseract_available = False
+            print("Warning: pytesseract not available")
+        
+        # Process based on file type
+        if file_ext == '.pdf':
+            # Try PDF text extraction first (faster)
+            try:
+                import PyPDF2
+                with open(file_path, 'rb') as file:
+                    pdf_reader = PyPDF2.PdfReader(file)
+                    
+                    # Check if PDF is encrypted/password protected
+                    if pdf_reader.is_encrypted:
+                        # Try to decrypt with empty password
+                        decryption_result = pdf_reader.decrypt('')
+                        if decryption_result == 0:
+                            extracted_text = "Error: This PDF is password-protected. Please upload an unprotected version of the document."
+                            print("PDF is password protected")
+                        else:
+                            print("PDF decrypted successfully")
+                    
+                    # Extract text from pages if not blocked by password
+                    if not extracted_text:
+                        for page_num, page in enumerate(pdf_reader.pages):
+                            page_text = page.extract_text()
+                            if page_text.strip():
+                                extracted_text += f"\n--- Page {page_num+1} ---\n{page_text}"
+                
+                # If no text extracted and Tesseract is available, try OCR
+                if not extracted_text.strip() and tesseract_available:
+                    try:
+                        import pdf2image
+                        images = pdf2image.convert_from_path(file_path)
+                        for i, image in enumerate(images):
+                            text = pytesseract.image_to_string(image)
+                            extracted_text += f"\n--- Page {i+1} ---\n{text}"
+                    except Exception as ocr_error:
+                        print(f"OCR error: {ocr_error}")
+                        if not extracted_text:
+                            extracted_text = f"Could not extract text via OCR. Ensure Poppler and Tesseract are installed."
+                        
+            except Exception as e:
+                error_msg = str(e)
+                print(f"Error processing PDF: {error_msg}")
+                if not extracted_text:
+                    if "PyCryptodome" in error_msg or "AES" in error_msg:
+                        extracted_text = "Error: PDF encryption not supported. This should not happen - please restart the server and try again."
+                    elif "password" in error_msg.lower():
+                        extracted_text = "Error: This PDF is password-protected. Please upload an unprotected version."
+                    else:
+                        extracted_text = f"Error extracting text from PDF: {error_msg}"
+        
+        elif file_ext in ['.jpg', '.jpeg', '.png']:
+            # Process image with OCR
+            if tesseract_available:
+                try:
+                    from PIL import Image
+                    image = Image.open(file_path)
+                    extracted_text = pytesseract.image_to_string(image)
+                except Exception as e:
+                    print(f"Error processing image: {e}")
+                    extracted_text = f"Error extracting text from image: {str(e)}\n\nPlease ensure Tesseract OCR is installed."
+            else:
+                extracted_text = "Tesseract OCR is not installed. Please install pytesseract and Tesseract OCR to process images."
+        
+        # Extract structured data
+        extracted_data = extract_medical_data(extracted_text) if extracted_text else {}
+        
+        # Update record
+        record.extracted_text = extracted_text
+        record.extracted_data = extracted_data
+        record.ocr_status = 'completed' if extracted_text else 'failed'
+        
+        # Calculate confidence (simple heuristic)
+        if extracted_text and len(extracted_text) > 50:
+            record.ocr_confidence = 85.0
+        elif extracted_text:
+            record.ocr_confidence = 60.0
+        else:
+            record.ocr_confidence = 0.0
+        
+        # Try to extract metadata
+        if extracted_data:
+            if 'hospital_name' in extracted_data:
+                record.hospital_name = extracted_data['hospital_name']
+            if 'doctor_name' in extracted_data:
+                record.doctor_name = extracted_data['doctor_name']
+        
+        record.save()
+        print(f"OCR completed for record {record_id}: {len(extracted_text)} characters extracted")
+        
+    except Exception as e:
+        print(f"OCR Processing Error: {e}")
+        import traceback
+        traceback.print_exc()
+        try:
+            record = MedicalRecord.objects.get(id=record_id)
+            record.ocr_status = 'failed'
+            record.extracted_text = f"Processing failed: {str(e)}"
+            record.save()
+        except:
+            pass
+
+
+def extract_medical_data(text):
+    """Extract structured medical data from OCR text"""
+    data = {}
+    
+    if not text:
+        return data
+    
+    text_lower = text.lower()
+    
+    # Extract patient name
+    name_patterns = [
+        r'patient\s*name\s*:?\s*([A-Za-z\s\.]+?)(?:\n|age|gender|date)',
+        r'name\s*:?\s*([A-Za-z\s\.]+?)(?:\n|age|gender|date)',
+        r'patient\s*:?\s*([A-Za-z\s\.]+?)(?:\n|age|gender)',
+    ]
+    for pattern in name_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            name = match.group(1).strip()
+            # Filter out short or suspicious names
+            if len(name) > 2 and not any(char.isdigit() for char in name):
+                data['patient_name'] = name
+                break
+    
+    # Extract age
+    age_patterns = [
+        r'age\s*:?\s*(\d{1,3})',
+        r'(\d{1,3})\s*(?:years?|yrs?|y\.o\.)',
+    ]
+    for pattern in age_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            age = int(match.group(1))
+            if 0 < age < 120:  # Valid age range
+                data['age'] = str(age)
+                break
+    
+    # Extract gender
+    gender_match = re.search(r'gender\s*:?\s*(male|female|m|f)\b', text_lower)
+    if gender_match:
+        gender = gender_match.group(1).lower()
+        data['gender'] = 'Male' if gender in ['male', 'm'] else 'Female'
+    elif re.search(r'\b(male|m)\b', text_lower) and not re.search(r'\bfemale\b', text_lower):
+        data['gender'] = 'Male'
+    elif re.search(r'\b(female|f)\b', text_lower):
+        data['gender'] = 'Female'
+    
+    # Extract date of birth
+    dob_patterns = [
+        r'(?:date\s*of\s*birth|dob|d\.o\.b\.?)\s*:?\s*(\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4})',
+        r'born\s*:?\s*(\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4})',
+    ]
+    for pattern in dob_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            data['date_of_birth'] = match.group(1).strip()
+            break
+    
+    # Extract report date
+    report_date_patterns = [
+        r'(?:report\s*date|date)\s*:?\s*(\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4})',
+        r'(?:collected|sample|test)\s*date\s*:?\s*(\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4})',
+    ]
+    for pattern in report_date_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            data['date'] = match.group(1).strip()
+            break
+    
+    # Extract hospital/clinic name
+    hospital_patterns = [
+        r'hospital\s*:?\s*([A-Za-z0-9\s\-\.,]+?)(?:\n|tel|phone|email|address)',
+        r'clinic\s*:?\s*([A-Za-z0-9\s\-\.,]+?)(?:\n|tel|phone|email)',
+        r'medical\s*center\s*:?\s*([A-Za-z0-9\s\-\.,]+?)(?:\n|tel|phone)',
+    ]
+    for pattern in hospital_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            hospital = match.group(1).strip()
+            if len(hospital) > 2:
+                data['hospital_name'] = hospital[:100]  # Limit length
+                break
+    
+    # Extract doctor name
+    doctor_patterns = [
+        r'(?:dr\.?|doctor)\s+([A-Za-z\s\.]+?)(?:\n|md|mbbs|physician)',
+        r'physician\s*:?\s*([A-Za-z\s\.]+?)(?:\n|$)',
+        r'consulting\s*doctor\s*:?\s*([A-Za-z\s\.]+?)(?:\n|$)',
+    ]
+    for pattern in doctor_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            doctor = match.group(1).strip()
+            if len(doctor) > 2:
+                data['doctor_name'] = doctor[:50]
+                break
+    
+    # Extract patient ID
+    id_patterns = [
+        r'(?:patient\s*id|patient\s*no|id\s*no|registration\s*no)\s*:?\s*([A-Za-z0-9\-]+)',
+        r'(?:mr\s*no|uhid)\s*:?\s*([A-Za-z0-9\-]+)',
+    ]
+    for pattern in id_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            data['patient_id'] = match.group(1).strip()
+            break
+    
+    # Extract test results (improved filtering)
+    test_results = {}
+    lines = text.split('\n')
+    
+    # Common medical test parameter keywords
+    medical_test_names = [
+        'glucose', 'hemoglobin', 'hba1c', 'hgb', 'hct', 'hematocrit',
+        'cholesterol', 'ldl', 'hdl', 'vldl', 'triglyceride', 'lipid',
+        'creatinine', 'urea', 'bun', 'egfr', 'gfr',
+        'sodium', 'potassium', 'chloride', 'bicarbonate', 'calcium', 'magnesium', 'phosphorus',
+        'albumin', 'globulin', 'protein', 'bilirubin', 'direct', 'indirect', 'total',
+        'sgpt', 'sgot', 'alt', 'ast', 'alp', 'alkaline', 'ggt', 'ldh',
+        'amylase', 'lipase', 'cpk', 'troponin', 'bnp', 'nt-pro',
+        'wbc', 'rbc', 'platelet', 'neutrophil', 'lymphocyte', 'monocyte', 'eosinophil', 'basophil',
+        'esr', 'crp', 'tsh', 't3', 't4', 'ft3', 'ft4', 'cortisol',
+        'vitamin', 'b12', 'folate', 'iron', 'ferritin', 'tibc', 'transferrin',
+        'uric', 'acid', 'psa', 'cea', 'ca-125', 'ca-19', 'afp',
+        'inr', 'pt', 'ptt', 'aptt', 'fibrinogen', 'd-dimer',
+        'hbsag', 'anti-hcv', 'hiv', 'vdrl', 'tpha',
+        'mcv', 'mch', 'mchc', 'rdw', 'mpv', 'pdw',
+        'fasting', 'postprandial', 'random', 'a1c'
+    ]
+    
+    # Words that indicate this is NOT a test result
+    exclude_keywords = [
+        'email', 'phone', 'tel', 'fax', 'website', 'www', 'http', '@',
+        'address', 'street', 'city', 'zip', 'postal',
+        'report date', 'collection date', 'receipt date', 'sampling date',
+        'patient id', 'patient name', 'your id', 'request code',
+        'date of birth', 'age', 'gender', 'physician', 'doctor',
+        'page', 'printed', 'generated', 'laboratory', 'hospital',
+        'borderline:', 'very high:', 'very low:', 'optimal:', 'normal:',
+        'reference range', 'reference value', 'reference interval'
+    ]
+    
+    # Additional patterns that indicate reference ranges, not actual results
+    reference_range_patterns = [
+        r'^(normal|optimal|borderline|high|low|very high|very low)\s*:',
+        r'^(normal|optimal)\s*<',
+        r'^\s*<\s*\d+\.?\d*\s*,',  # Starts with < number,
+        r'^\s*>\s*\d+\.?\d*\s*,',  # Starts with > number,
+    ]
+    
+    for line in lines:
+        line = line.strip()
+        if not line or len(line) < 3:
+            continue
+        
+        line_lower = line.lower()
+        
+        # Skip lines with exclude keywords
+        if any(keyword in line_lower for keyword in exclude_keywords):
+            continue
+        
+        # Skip reference range patterns
+        if any(re.match(pattern, line, re.IGNORECASE) for pattern in reference_range_patterns):
+            continue
+        
+        # Look for test results with colon or tab separator
+        if ':' in line or '\t' in line:
+            separator = ':' if ':' in line else '\t'
+            parts = line.split(separator, 1)
+            
+            if len(parts) == 2:
+                key = parts[0].strip()
+                value = parts[1].strip()
+                key_lower = key.lower()
+                
+                # Skip if key itself is a reference range indicator
+                if key_lower in ['normal', 'optimal', 'borderline', 'high', 'low', 'very high', 'very low']:
+                    continue
+                
+                # Check if this is likely a medical test parameter
+                is_medical_test = any(test in key_lower for test in medical_test_names)
+                
+                # Additional criteria: value contains numbers and units
+                has_numeric = any(char.isdigit() for char in value)
+                has_units = any(unit in value.lower() for unit in ['mg', 'dl', 'mmol', 'g/', 'ml', 'µl', 'ng', 'pg', 'iu', '%', 'cells', 'mm', 'fL', 'sec', 'min'])
+                
+                # Criteria for valid test results
+                if (key and value and 
+                    2 < len(key) < 60 and 
+                    len(value) < 200 and
+                    has_numeric and
+                    (is_medical_test or has_units) and
+                    not key.isdigit()):
+                    
+                    test_results[key] = value
+    
+    # Also try to extract table-like data (parameter | value | range format)
+    # Look for lines with multiple values separated by tabs or multiple spaces
+    for line in lines:
+        line = line.strip()
+        if not line or len(line) < 5:
+            continue
+            
+        line_lower = line.lower()
+        
+        # Skip excluded lines
+        if any(keyword in line_lower for keyword in exclude_keywords):
+            continue
+        
+        # Check if line contains medical test name
+        if any(test in line_lower for test in medical_test_names):
+            # Try to parse table-like format with multiple spaces/tabs
+            parts = re.split(r'\s{2,}|\t', line)
+            if len(parts) >= 2:
+                key = parts[0].strip()
+                value = ' '.join(parts[1:]).strip()
+                
+                if (key and value and 
+                    2 < len(key) < 60 and 
+                    any(char.isdigit() for char in value) and
+                    not key.isdigit() and
+                    key not in test_results):  # Avoid duplicates
+                    
+                    test_results[key] = value
+    
+    if test_results:
+        data['test_results'] = test_results
+    
+    return data

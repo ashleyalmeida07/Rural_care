@@ -14,4 +14,10 @@ urlpatterns = [
     path('doctor/kyc/status/', views.kyc_status, name='kyc_status'),
     path('doctor/kyc/form/', views.kyc_form, name='kyc_form'),
     path('doctor/kyc/preview/', views.kyc_preview, name='kyc_preview'),
+    
+    # Medical Records
+    path('patient/medical-records/', views.medical_records_list, name='medical_records_list'),
+    path('patient/medical-records/upload/', views.upload_medical_record, name='upload_medical_record'),
+    path('patient/medical-records/<uuid:record_id>/', views.medical_record_detail, name='medical_record_detail'),
+    path('patient/medical-records/<uuid:record_id>/delete/', views.delete_medical_record, name='delete_medical_record'),
 ]
