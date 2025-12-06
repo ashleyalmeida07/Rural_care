@@ -10,4 +10,8 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('patient/dashboard/', views.patient_dashboard, name='patient_dashboard'),
     path('doctor/dashboard/', views.doctor_dashboard, name='doctor_dashboard'),
+    # KYC Routes
+    path('doctor/kyc/status/', views.kyc_status, name='kyc_status'),
+    path('doctor/kyc/form/', views.kyc_form, name='kyc_form'),
+    path('doctor/kyc/preview/', views.kyc_preview, name='kyc_preview'),
 ]

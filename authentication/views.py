@@ -4,9 +4,11 @@ from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from .supabase_client import get_supabase_client
-from .models import User, PatientProfile, DoctorProfile
+from .models import User, PatientProfile, DoctorProfile, DoctorKYC
 import json
+from datetime import datetime
 
 def home(request):
     """Home page"""
@@ -169,4 +171,143 @@ def doctor_dashboard(request):
     """Doctor dashboard"""
     if not request.user.is_authenticated or request.user.user_type != 'doctor':
         return redirect('doctor_login')
-    return render(request, 'authentication/doctor_dashboard.html')
+    
+    doctor_profile = DoctorProfile.objects.get(user=request.user)
+    
+    try:
+        kyc = DoctorKYC.objects.get(doctor=doctor_profile)
+    except DoctorKYC.DoesNotExist:
+        kyc = None
+    
+    context = {
+        'kyc': kyc,
+        'doctor_profile': doctor_profile
+    }
+    
+    return render(request, 'authentication/doctor_dashboard.html', context)
+
+
+def kyc_status(request):
+    """Display KYC status for doctor"""
+    if not request.user.is_authenticated or request.user.user_type != 'doctor':
+        return redirect('doctor_login')
+    
+    doctor_profile = DoctorProfile.objects.get(user=request.user)
+    
+    try:
+        kyc = DoctorKYC.objects.get(doctor=doctor_profile)
+    except DoctorKYC.DoesNotExist:
+        kyc = None
+    
+    context = {
+        'kyc': kyc,
+        'doctor_profile': doctor_profile
+    }
+    
+    return render(request, 'authentication/kyc_status.html', context)
+
+
+def kyc_form(request):
+    """KYC form for doctors"""
+    if not request.user.is_authenticated or request.user.user_type != 'doctor':
+        return redirect('doctor_login')
+    
+    doctor_profile = DoctorProfile.objects.get(user=request.user)
+    
+    try:
+        kyc = DoctorKYC.objects.get(doctor=doctor_profile)
+        # If already approved, redirect
+        if kyc.status == 'approved':
+            messages.info(request, 'Your KYC is already approved.')
+            return redirect('doctor_dashboard')
+    except DoctorKYC.DoesNotExist:
+        kyc = None
+    
+    if request.method == 'POST':
+        # Create or update KYC
+        kyc_data = {
+            'full_name': request.POST.get('full_name'),
+            'date_of_birth': request.POST.get('date_of_birth'),
+            'gender': request.POST.get('gender'),
+            'nationality': request.POST.get('nationality'),
+            'personal_email': request.POST.get('personal_email'),
+            'mobile_number': request.POST.get('mobile_number'),
+            'residential_address': request.POST.get('residential_address'),
+            'city': request.POST.get('city'),
+            'state': request.POST.get('state'),
+            'postal_code': request.POST.get('postal_code'),
+            'country': request.POST.get('country'),
+            'license_number_verified': request.POST.get('license_number_verified'),
+            'license_issuing_authority': request.POST.get('license_issuing_authority'),
+            'license_issue_date': request.POST.get('license_issue_date'),
+            'license_expiry_date': request.POST.get('license_expiry_date'),
+            'medical_degree': request.POST.get('medical_degree'),
+            'medical_university': request.POST.get('medical_university'),
+            'graduation_year': request.POST.get('graduation_year'),
+            'current_hospital': request.POST.get('current_hospital'),
+            'designation': request.POST.get('designation'),
+            'department_specialty': request.POST.get('department_specialty'),
+            'years_of_practice': request.POST.get('years_of_practice'),
+            'identity_document_type': request.POST.get('identity_document_type'),
+            'identity_document_number': request.POST.get('identity_document_number'),
+            'address_proof_type': request.POST.get('address_proof_type'),
+            'status': 'pending',
+            'submitted_at': datetime.now(),
+        }
+        
+        # Handle file uploads
+        if 'license_document' in request.FILES:
+            kyc_data['license_document'] = request.FILES['license_document']
+        if 'degree_certificate' in request.FILES:
+            kyc_data['degree_certificate'] = request.FILES['degree_certificate']
+        if 'employment_document' in request.FILES:
+            kyc_data['employment_document'] = request.FILES['employment_document']
+        if 'identity_document_file' in request.FILES:
+            kyc_data['identity_document_file'] = request.FILES['identity_document_file']
+        if 'address_proof_file' in request.FILES:
+            kyc_data['address_proof_file'] = request.FILES['address_proof_file']
+        
+        if kyc:
+            # Update existing KYC
+            for key, value in kyc_data.items():
+                if value is not None:
+                    setattr(kyc, key, value)
+            kyc.save()
+        else:
+            # Create new KYC
+            kyc_data['doctor'] = doctor_profile
+            kyc = DoctorKYC.objects.create(**kyc_data)
+        
+        messages.success(request, 'KYC information submitted successfully. Your application is under review.')
+        return redirect('kyc_status')
+    
+    context = {
+        'kyc': kyc,
+        'doctor_profile': doctor_profile,
+        'gender_choices': [('male', 'Male'), ('female', 'Female'), ('other', 'Other')],
+        'identity_doc_types': [('passport', 'Passport'), ('aadhaar', 'Aadhaar'), ('national_id', 'National ID'), ('driving_license', 'Driving License')],
+        'address_proof_types': [('utility_bill', 'Utility Bill'), ('rental_agreement', 'Rental Agreement'), ('property_deed', 'Property Deed'), ('bank_statement', 'Bank Statement')],
+    }
+    
+    return render(request, 'authentication/kyc_form.html', context)
+
+
+def kyc_preview(request):
+    """Preview submitted KYC"""
+    if not request.user.is_authenticated or request.user.user_type != 'doctor':
+        return redirect('doctor_login')
+    
+    doctor_profile = DoctorProfile.objects.get(user=request.user)
+    
+    try:
+        kyc = DoctorKYC.objects.get(doctor=doctor_profile)
+    except DoctorKYC.DoesNotExist:
+        messages.error(request, 'No KYC found. Please complete your KYC first.')
+        return redirect('kyc_form')
+    
+    context = {
+        'kyc': kyc,
+        'doctor_profile': doctor_profile,
+    }
+    
+    return render(request, 'authentication/kyc_preview.html', context)

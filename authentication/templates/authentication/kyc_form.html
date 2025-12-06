@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+
+{% block title %}Doctor KYC Form{% endblock %}
+
+{% block content %}
+<div class="fade-in max-w-4xl mx-auto py-8">
+    <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Doctor KYC Verification</h1>
+            <p class="text-gray-600">Complete your Know Your Customer (KYC) verification to activate your doctor account</p>
+            {% if kyc and kyc.status == 'rejected' %}
+            <div class="mt-4 p-4 bg-red-50 border-l-4 border-red-500 rounded">
+                <p class="text-red-700"><strong>Application Rejected:</strong> {{ kyc.rejection_reason }}</p>
+            </div>
+            {% elif kyc and kyc.status == 'pending' %}
+            <div class="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded">
+                <p class="text-yellow-700"><strong>Pending Review:</strong> Your KYC application is under review. You can edit it if needed.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-8">
+            {% csrf_token %}
+
+            <!-- Personal Information Section -->
+            <div class="border-b pb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Personal Information</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+                        <input type="text" name="full_name" required value="{{ kyc.full_name|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="Enter your full name">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth *</label>
+                        <input type="date" name="date_of_birth" required value="{{ kyc.date_of_birth|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Gender *</label>
+                        <select name="gender" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">Select Gender</option>
+                            {% for value, label in gender_choices %}
+                            <option value="{{ value }}" {% if kyc.gender == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nationality *</label>
+                        <input type="text" name="nationality" required value="{{ kyc.nationality|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="e.g., Indian">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information Section -->
+            <div class="border-b pb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Contact Information</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Personal Email *</label>
+                        <input type="email" name="personal_email" required value="{{ kyc.personal_email|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="your.email@example.com">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Mobile Number *</label>
+                        <input type="tel" name="mobile_number" required value="{{ kyc.mobile_number|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="+91 98765 43210">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Residential Address *</label>
+                        <textarea name="residential_address" required rows="3"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="Enter your complete residential address">{{ kyc.residential_address|default:'' }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">City *</label>
+                        <input type="text" name="city" required value="{{ kyc.city|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="City">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">State/Province *</label>
+                        <input type="text" name="state" required value="{{ kyc.state|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="State">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Postal Code *</label>
+                        <input type="text" name="postal_code" required value="{{ kyc.postal_code|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="123456">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Country *</label>
+                        <input type="text" name="country" required value="{{ kyc.country|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="Country">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical License Information -->
+            <div class="border-b pb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Medical License Information</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">License Number *</label>
+                        <input type="text" name="license_number_verified" required value="{{ kyc.license_number_verified|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="Enter your medical license number">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Issuing Authority *</label>
+                        <input type="text" name="license_issuing_authority" required value="{{ kyc.license_issuing_authority|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="Medical Council Name">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">License Issue Date *</label>
+                        <input type="date" name="license_issue_date" required value="{{ kyc.license_issue_date|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">License Expiry Date *</label>
+                        <input type="date" name="license_expiry_date" required value="{{ kyc.license_expiry_date|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">License Document (PDF/Image) *</label>
+                        <input type="file" name="license_document" accept=".pdf,.jpg,.jpeg,.png" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Upload your medical license certificate (PDF or Image)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Educational Qualification -->
+            <div class="border-b pb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Educational Qualification</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Medical Degree *</label>
+                        <input type="text" name="medical_degree" required value="{{ kyc.medical_degree|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="e.g., MBBS, MD, BDS">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Medical University *</label>
+                        <input type="text" name="medical_university" required value="{{ kyc.medical_university|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="University name">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Graduation Year *</label>
+                        <input type="number" name="graduation_year" required value="{{ kyc.graduation_year|default:'' }}" min="1900" max="2100"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="YYYY">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Degree Certificate (PDF/Image) *</label>
+                        <input type="file" name="degree_certificate" accept=".pdf,.jpg,.jpeg,.png" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Upload your medical degree certificate</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Professional Information -->
+            <div class="border-b pb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Professional Information</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Current Hospital/Clinic</label>
+                        <input type="text" name="current_hospital" value="{{ kyc.current_hospital|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="Hospital/Clinic name">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Designation *</label>
+                        <input type="text" name="designation" required value="{{ kyc.designation|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="e.g., Senior Consultant, Associate Professor">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Department/Specialty *</label>
+                        <input type="text" name="department_specialty" required value="{{ kyc.department_specialty|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="e.g., Oncology, Cardiology">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Years of Practice *</label>
+                        <input type="number" name="years_of_practice" required value="{{ kyc.years_of_practice|default:'' }}" min="0" max="70"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="Years">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Employment Document (PDF/Image)</label>
+                        <input type="file" name="employment_document" accept=".pdf,.jpg,.jpeg,.png"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Upload employment letter or certificate</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Identity Documents -->
+            <div class="border-b pb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Identity Verification</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Identity Document Type *</label>
+                        <select name="identity_document_type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">Select Document Type</option>
+                            {% for value, label in identity_doc_types %}
+                            <option value="{{ value }}" {% if kyc.identity_document_type == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Document Number *</label>
+                        <input type="text" name="identity_document_number" required value="{{ kyc.identity_document_number|default:'' }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="Document number">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Identity Document (PDF/Image) *</label>
+                        <input type="file" name="identity_document_file" accept=".pdf,.jpg,.jpeg,.png" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Upload clear copy of your identity document</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Proof -->
+            <div class="pb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Address Proof</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Address Proof Type *</label>
+                        <select name="address_proof_type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">Select Proof Type</option>
+                            {% for value, label in address_proof_types %}
+                            <option value="{{ value }}" {% if kyc.address_proof_type == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Address Proof Document (PDF/Image) *</label>
+                        <input type="file" name="address_proof_file" accept=".pdf,.jpg,.jpeg,.png" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Upload utility bill, rental agreement, or property deed</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-4 pt-8 border-t">
+                <button type="submit" class="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition duration-200">
+                    Submit KYC Application
+                </button>
+                <a href="{% url 'doctor_dashboard' %}" class="px-8 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition duration-200 text-center">
+                    Back to Dashboard
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

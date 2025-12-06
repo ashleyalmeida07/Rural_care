@@ -4,6 +4,41 @@
 
 {% block content %}
 <div class="fade-in">
+    <!-- KYC Status Alert Banner -->
+    {% if not kyc or kyc.status != 'approved' %}
+    <div class="mb-8 {% if kyc.status == 'rejected' %}bg-red-50 border-l-4 border-red-500{% elif kyc.status == 'pending' %}bg-yellow-50 border-l-4 border-yellow-500{% else %}bg-blue-50 border-l-4 border-blue-500{% endif %} p-6 rounded-lg">
+        <div class="flex items-start justify-between">
+            <div class="flex items-start">
+                <svg class="h-6 w-6 {% if kyc.status == 'rejected' %}text-red-500{% elif kyc.status == 'pending' %}text-yellow-500{% else %}text-blue-500{% endif %} mr-4 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 0h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                    {% if not kyc %}
+                    <h3 class="font-semibold {% if kyc.status == 'rejected' %}text-red-900{% elif kyc.status == 'pending' %}text-yellow-900{% else %}text-blue-900{% endif %} text-lg mb-1">KYC Verification Required</h3>
+                    <p class="{% if kyc.status == 'rejected' %}text-red-700{% elif kyc.status == 'pending' %}text-yellow-700{% else %}text-blue-700{% endif %}">Please complete your KYC verification to unlock full features and enable patient consultations.</p>
+                    {% elif kyc.status == 'pending' %}
+                    <h3 class="font-semibold text-yellow-900 text-lg mb-1">KYC Under Review</h3>
+                    <p class="text-yellow-700">Your KYC application is being reviewed. Typically takes 3-5 business days. We'll notify you once the review is complete.</p>
+                    {% elif kyc.status == 'rejected' %}
+                    <h3 class="font-semibold text-red-900 text-lg mb-1">KYC Rejected</h3>
+                    <p class="text-red-700">Your KYC application was rejected. Please review the feedback and resubmit.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="flex gap-2">
+                {% if not kyc or kyc.status == 'rejected' %}
+                <a href="{% url 'kyc_form' %}" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition duration-200 whitespace-nowrap">
+                    {% if kyc.status == 'rejected' %}Resubmit{% else %}Start KYC{% endif %}
+                </a>
+                {% endif %}
+                <a href="{% url 'kyc_status' %}" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition duration-200">
+                    View Status
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Welcome Header -->
     <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
         <div class="flex items-center justify-between">
