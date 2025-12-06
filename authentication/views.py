@@ -283,6 +283,26 @@ def kyc_form(request):
             kyc_data['doctor'] = doctor_profile
             kyc = DoctorKYC.objects.create(**kyc_data)
         
+        # Sync KYC data to DoctorProfile
+        doctor_profile.gender = kyc.gender
+        doctor_profile.date_of_birth = kyc.date_of_birth
+        doctor_profile.medical_degree = kyc.medical_degree
+        doctor_profile.license_number = kyc.license_number_verified
+        doctor_profile.years_of_experience = kyc.years_of_practice
+        doctor_profile.specialization = kyc.department_specialty if kyc.department_specialty else doctor_profile.specialization
+        doctor_profile.hospital_affiliation = kyc.current_hospital
+        doctor_profile.city = kyc.city
+        doctor_profile.state = kyc.state
+        doctor_profile.pincode = kyc.postal_code
+        doctor_profile.country = kyc.country
+        doctor_profile.clinic_address = kyc.residential_address
+        doctor_profile.profile_completed = True
+        doctor_profile.save()
+        
+        # Update user phone number
+        request.user.phone_number = kyc.mobile_number
+        request.user.save()
+        
         messages.success(request, 'KYC information submitted successfully. Your application is under review.')
         return redirect('kyc_status')
     
