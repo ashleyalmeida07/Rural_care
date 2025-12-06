@@ -40,114 +40,118 @@
     {% endif %}
 
     <!-- Welcome Header -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center">
+    <div class="bg-card border border-border rounded-lg p-4 sm:p-6 mb-6 sm:mb-8 transition-colors">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center w-full sm:w-auto">
                 {% if user.profile_picture %}
-                    <img src="{{ user.profile_picture }}" alt="Profile" class="h-16 w-16 rounded-full mr-4">
+                    <img src="{{ user.profile_picture }}" alt="Profile" class="h-12 w-12 sm:h-16 sm:w-16 rounded-full mr-3 sm:mr-4 ring-2 ring-primary/20">
                 {% else %}
-                    <div class="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center mr-4">
-                        <span class="text-2xl text-green-600 font-bold">{{ user.first_name.0|default:'D' }}</span>
+                    <div class="h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-primary/10 flex items-center justify-center mr-3 sm:mr-4 ring-2 ring-primary/20">
+                        <span class="text-xl sm:text-2xl text-primary font-bold">{{ user.first_name.0|default:'D' }}</span>
                     </div>
                 {% endif %}
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Welcome, Dr. {{ user.first_name|default:user.username }}!</h1>
-                    <p class="text-gray-600">{{ user.doctor_profile.specialization|default:"Oncologist" }}</p>
+                <div class="flex-1 min-w-0">
+                    <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground truncate">Welcome, Dr. {{ user.first_name|default:user.username }}!</h1>
+                    <p class="text-sm sm:text-base text-muted-foreground truncate">{{ user.doctor_profile.specialization|default:"Oncologist" }}</p>
                 </div>
             </div>
-            <div class="text-right">
-                <p class="text-sm text-gray-500">Last Login</p>
-                <p class="text-lg font-semibold text-gray-900">{{ user.last_login|date:"M d, Y" }}</p>
+            <div class="text-left sm:text-right w-full sm:w-auto">
+                <p class="text-xs sm:text-sm text-muted-foreground">Last Login</p>
+                <p class="text-sm sm:text-base lg:text-lg font-semibold text-foreground">{{ user.last_login|date:"M d, Y" }}</p>
             </div>
         </div>
     </div>
 
     <!-- Quick Stats -->
-    <div class="grid md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <div class="flex items-center">
-                <div class="bg-blue-100 p-3 rounded-full">
-                    <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                    </svg>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <!-- Total Patients Card -->
+        <div class="bg-card border border-border rounded-lg p-4 sm:p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/50">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <p class="text-xs sm:text-sm text-muted-foreground mb-1">Total Patients</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-foreground">0</p>
                 </div>
-                <div class="ml-4">
-                    <p class="text-gray-500 text-sm">Total Patients</p>
-                    <p class="text-2xl font-bold text-gray-900">0</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <div class="flex items-center">
-                <div class="bg-green-100 p-3 rounded-full">
-                    <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <p class="text-gray-500 text-sm">Today's Appointments</p>
-                    <p class="text-2xl font-bold text-gray-900">0</p>
+                <div class="bg-blue-500/10 dark:bg-blue-500/20 p-2.5 sm:p-3 rounded-lg">
+                    <i class="fas fa-users text-blue-600 dark:text-blue-400 text-xl sm:text-2xl"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <div class="flex items-center">
-                <div class="bg-purple-100 p-3 rounded-full">
-                    <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                    </svg>
+        <!-- Today's Appointments Card -->
+        <div class="bg-card border border-border rounded-lg p-4 sm:p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/50">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <p class="text-xs sm:text-sm text-muted-foreground mb-1">Today's Appointments</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-foreground">0</p>
                 </div>
-                <div class="ml-4">
-                    <p class="text-gray-500 text-sm">Active Cases</p>
-                    <p class="text-2xl font-bold text-gray-900">0</p>
+                <div class="bg-green-500/10 dark:bg-green-500/20 p-2.5 sm:p-3 rounded-lg">
+                    <i class="fas fa-calendar-check text-green-600 dark:text-green-400 text-xl sm:text-2xl"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <div class="flex items-center">
-                <div class="bg-red-100 p-3 rounded-full">
-                    <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
+        <!-- Active Cases Card -->
+        <div class="bg-card border border-border rounded-lg p-4 sm:p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/50">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <p class="text-xs sm:text-sm text-muted-foreground mb-1">Active Cases</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-foreground">0</p>
                 </div>
-                <div class="ml-4">
-                    <p class="text-gray-500 text-sm">Pending Reviews</p>
-                    <p class="text-2xl font-bold text-gray-900">0</p>
+                <div class="bg-purple-500/10 dark:bg-purple-500/20 p-2.5 sm:p-3 rounded-lg">
+                    <i class="fas fa-clipboard-list text-purple-600 dark:text-purple-400 text-xl sm:text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Reviews Card -->
+        <div class="bg-card border border-border rounded-lg p-4 sm:p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/50">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <p class="text-xs sm:text-sm text-muted-foreground mb-1">Pending Reviews</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-foreground">0</p>
+                </div>
+                <div class="bg-red-500/10 dark:bg-red-500/20 p-2.5 sm:p-3 rounded-lg">
+                    <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-xl sm:text-2xl"></i>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Main Content Grid -->
-    <div class="grid md:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         <!-- Left Column -->
-        <div class="md:col-span-2 space-y-8">
+        <div class="lg:col-span-2 space-y-6 sm:space-y-8">
             <!-- Today's Schedule -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">Today's Schedule</h2>
-                <div class="text-center py-12">
-                    <svg class="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    <p class="text-gray-500 mb-4">No appointments scheduled for today</p>
-                    <button class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition duration-200">
+            <div class="bg-card border border-border rounded-lg p-4 sm:p-6 transition-colors">
+                <h2 class="text-xl sm:text-2xl font-bold text-foreground mb-4 flex items-center">
+                    <i class="fas fa-calendar-alt mr-2 sm:mr-3 text-primary"></i>
+                    Today's Schedule
+                </h2>
+                <div class="text-center py-8 sm:py-12">
+                    <div class="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-muted mb-3 sm:mb-4">
+                        <i class="fas fa-calendar-day text-2xl sm:text-3xl text-muted-foreground"></i>
+                    </div>
+                    <p class="text-sm sm:text-base text-muted-foreground mb-4">No appointments scheduled for today</p>
+                    <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 sm:px-6 py-2 sm:py-2.5 rounded-md transition-all duration-200 font-medium text-sm sm:text-base inline-flex items-center">
+                        <i class="fas fa-calendar mr-2"></i>
                         View Full Calendar
                     </button>
                 </div>
             </div>
 
             <!-- Recent Patients -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">Recent Patients</h2>
-                <div class="text-center py-12">
-                    <svg class="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                    </svg>
-                    <p class="text-gray-500 mb-4">No patient records yet</p>
-                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition duration-200">
+            <div class="bg-card border border-border rounded-lg p-4 sm:p-6 transition-colors">
+                <h2 class="text-xl sm:text-2xl font-bold text-foreground mb-4 flex items-center">
+                    <i class="fas fa-user-injured mr-2 sm:mr-3 text-primary"></i>
+                    Recent Patients
+                </h2>
+                <div class="text-center py-8 sm:py-12">
+                    <div class="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-muted mb-3 sm:mb-4">
+                        <i class="fas fa-users text-2xl sm:text-3xl text-muted-foreground"></i>
+                    </div>
+                    <p class="text-sm sm:text-base text-muted-foreground mb-4">No patient records yet</p>
+                    <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 sm:px-6 py-2 sm:py-2.5 rounded-md transition-all duration-200 font-medium text-sm sm:text-base inline-flex items-center">
+                        <i class="fas fa-user-plus mr-2"></i>
                         Add New Patient
                     </button>
                 </div>
@@ -155,58 +159,75 @@
         </div>
 
         <!-- Right Column -->
-        <div class="space-y-8">
+        <div class="space-y-6 sm:space-y-8">
             <!-- Quick Actions -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-                <div class="space-y-3">
-                    <button class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-3 rounded-lg text-left transition duration-200">
-                        🤖 AI Treatment Planner
+            <div class="bg-card border border-border rounded-lg p-4 sm:p-6 transition-colors">
+                <h2 class="text-lg sm:text-xl font-bold text-foreground mb-4">Quick Actions</h2>
+                <div class="space-y-2 sm:space-y-3">
+                    <button class="w-full bg-accent hover:bg-accent/80 text-accent-foreground px-3 sm:px-4 py-2.5 sm:py-3 rounded-md text-left transition-all duration-200 flex items-center text-sm sm:text-base group">
+                        <i class="fas fa-robot mr-2 sm:mr-3 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform"></i>
+                        <span class="font-medium">AI Treatment Planner</span>
                     </button>
-                    <button class="w-full bg-green-50 hover:bg-green-100 text-green-700 px-4 py-3 rounded-lg text-left transition duration-200">
-                        👥 Patient List
+                    <button class="w-full bg-accent hover:bg-accent/80 text-accent-foreground px-3 sm:px-4 py-2.5 sm:py-3 rounded-md text-left transition-all duration-200 flex items-center text-sm sm:text-base group">
+                        <i class="fas fa-users mr-2 sm:mr-3 text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform"></i>
+                        <span class="font-medium">Patient List</span>
                     </button>
-                    <button class="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 px-4 py-3 rounded-lg text-left transition duration-200">
-                        📊 View Analytics
+                    <button class="w-full bg-accent hover:bg-accent/80 text-accent-foreground px-3 sm:px-4 py-2.5 sm:py-3 rounded-md text-left transition-all duration-200 flex items-center text-sm sm:text-base group">
+                        <i class="fas fa-chart-line mr-2 sm:mr-3 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform"></i>
+                        <span class="font-medium">View Analytics</span>
                     </button>
-                    <button class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-3 rounded-lg text-left transition duration-200">
-                        💬 Messages
+                    <button class="w-full bg-accent hover:bg-accent/80 text-accent-foreground px-3 sm:px-4 py-2.5 sm:py-3 rounded-md text-left transition-all duration-200 flex items-center text-sm sm:text-base group">
+                        <i class="fas fa-comments mr-2 sm:mr-3 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform"></i>
+                        <span class="font-medium">Messages</span>
                     </button>
                 </div>
             </div>
 
             <!-- AI Insights -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-900 mb-4">AI Insights</h2>
+            <div class="bg-card border border-border rounded-lg p-4 sm:p-6 transition-colors">
+                <h2 class="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center">
+                    <i class="fas fa-brain mr-2 text-primary"></i>
+                    AI Insights
+                </h2>
                 <div class="space-y-4">
-                    <div class="flex items-start">
-                        <div class="bg-blue-100 p-2 rounded-full mr-3">
-                            <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
+                    <div class="flex items-start p-3 rounded-md bg-muted/50">
+                        <div class="bg-blue-500/10 dark:bg-blue-500/20 p-2 rounded-lg mr-3 flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-600 dark:text-blue-400"></i>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-600">No pending AI analyses</p>
+                            <p class="text-xs sm:text-sm text-muted-foreground">No pending AI analyses</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Performance Stats -->
-            <div class="bg-gradient-to-br from-green-500 to-teal-600 rounded-lg shadow-lg p-6 text-white">
-                <h2 class="text-xl font-bold mb-2">📈 This Month</h2>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span class="opacity-90">Consultations:</span>
-                        <span class="font-bold">0</span>
+            <div class="bg-gradient-to-br from-primary to-primary/80 rounded-lg p-4 sm:p-6 text-primary-foreground border border-primary/20">
+                <h2 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center">
+                    <i class="fas fa-chart-bar mr-2"></i>
+                    This Month
+                </h2>
+                <div class="space-y-2 sm:space-y-3">
+                    <div class="flex justify-between items-center py-1.5 border-b border-primary-foreground/20">
+                        <span class="text-xs sm:text-sm opacity-90 flex items-center">
+                            <i class="fas fa-stethoscope mr-2 w-4"></i>
+                            Consultations:
+                        </span>
+                        <span class="font-bold text-sm sm:text-base">0</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="opacity-90">Treatment Plans:</span>
-                        <span class="font-bold">0</span>
+                    <div class="flex justify-between items-center py-1.5 border-b border-primary-foreground/20">
+                        <span class="text-xs sm:text-sm opacity-90 flex items-center">
+                            <i class="fas fa-file-medical mr-2 w-4"></i>
+                            Treatment Plans:
+                        </span>
+                        <span class="font-bold text-sm sm:text-base">0</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="opacity-90">Success Rate:</span>
-                        <span class="font-bold">--%</span>
+                    <div class="flex justify-between items-center py-1.5">
+                        <span class="text-xs sm:text-sm opacity-90 flex items-center">
+                            <i class="fas fa-check-circle mr-2 w-4"></i>
+                            Success Rate:
+                        </span>
+                        <span class="font-bold text-sm sm:text-base">--%</span>
                     </div>
                 </div>
             </div>

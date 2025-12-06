@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - Doctor{% endblock %}
+
+{% block content %}
+<div class="min-h-screen py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header Card -->
+        <div class="bg-card border border-border rounded-lg overflow-hidden mb-6 fade-in transition-colors">
+            <div class="bg-gradient-to-r from-primary to-primary/80 px-4 sm:px-6 py-4 sm:py-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-edit text-2xl sm:text-3xl text-primary-foreground"></i>
+                        <h1 class="ml-3 sm:ml-4 text-2xl sm:text-3xl font-bold text-primary-foreground">Edit Your Profile</h1>
+                    </div>
+                    <a href="{% url 'doctor_dashboard' %}" class="flex items-center px-4 py-2 bg-card text-foreground font-semibold rounded-md hover:bg-accent transition-colors text-sm sm:text-base">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+            
+            <div class="bg-blue-500/10 dark:bg-blue-500/20 border-l-4 border-blue-500 px-4 sm:px-6 py-4">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mr-3 mt-1 flex-shrink-0"></i>
+                    <p class="text-sm sm:text-base text-foreground">
+                        Update your profile information. Fields marked with <span class="text-red-600 dark:text-red-400 font-bold">*</span> are mandatory.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-6 bg-{{ message.tags }}-100 border-l-4 border-{{ message.tags }}-500 text-{{ message.tags }}-700 px-6 py-4 rounded-r-lg shadow-md fade-in" role="alert">
+                    <div class="flex justify-between items-center">
+                        <p>{{ message }}</p>
+                        <button type="button" class="text-{{ message.tags }}-700 hover:text-{{ message.tags }}-900" onclick="this.parentElement.parentElement.remove()">
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form Card -->
+        <div class="bg-card border border-border rounded-lg overflow-hidden fade-in transition-colors">
+            <form method="POST" id="profileForm" class="p-4 sm:p-8">
+                {% csrf_token %}
+                
+                <!-- Basic Information -->
+                <div class="mb-8">
+                    <h2 class="text-xl sm:text-2xl font-bold text-foreground mb-6 pb-2 border-b-2 border-primary flex items-center">
+                        <i class="fas fa-user text-primary mr-2"></i>
+                        Basic Information
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-foreground mb-2">
+                                Gender <span class="text-red-600 dark:text-red-400">*</span>
+                            </label>
+                            {{ form.gender }}
+                            {% if form.gender.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.gender.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
+                            {{ form.date_of_birth }}
+                            {% if form.date_of_birth.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.date_of_birth.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Information -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-2 border-b-2 border-indigo-500 flex items-center">
+                        <svg class="h-6 w-6 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Professional Information
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Specialization <span class="text-red-600">*</span>
+                            </label>
+                            {{ form.specialization }}
+                            {% if form.specialization.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.specialization.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                License Number <span class="text-red-600">*</span>
+                            </label>
+                            {{ form.license_number }}
+                            {% if form.license_number.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.license_number.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Years of Experience <span class="text-red-600">*</span>
+                            </label>
+                            {{ form.years_of_experience }}
+                            {% if form.years_of_experience.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.years_of_experience.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Medical Degree <span class="text-red-600">*</span>
+                            </label>
+                            {{ form.medical_degree }}
+                            {% if form.medical_degree.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.medical_degree.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Additional Qualifications</label>
+                        {{ form.additional_qualifications }}
+                        <p class="mt-1 text-sm text-gray-500">List any additional certifications, fellowships, or specializations</p>
+                        {% if form.additional_qualifications.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.additional_qualifications.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Work Information -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-2 border-b-2 border-indigo-500 flex items-center">
+                        <svg class="h-6 w-6 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        Work Information
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Hospital/Clinic Affiliation <span class="text-red-600">*</span>
+                            </label>
+                            {{ form.hospital_affiliation }}
+                            {% if form.hospital_affiliation.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.hospital_affiliation.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Department</label>
+                            {{ form.department }}
+                            {% if form.department.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.department.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Information -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-2 border-b-2 border-indigo-500 flex items-center">
+                        <svg class="h-6 w-6 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Location Information
+                    </h2>
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Clinic/Hospital Address <span class="text-red-600">*</span>
+                        </label>
+                        {{ form.clinic_address }}
+                        {% if form.clinic_address.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.clinic_address.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                City <span class="text-red-600">*</span>
+                            </label>
+                            {{ form.city }}
+                            {% if form.city.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.city.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                State <span class="text-red-600">*</span>
+                            </label>
+                            {{ form.state }}
+                            {% if form.state.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.state.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Pincode <span class="text-red-600">*</span>
+                            </label>
+                            {{ form.pincode }}
+                            {% if form.pincode.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.pincode.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Country</label>
+                        {{ form.country }}
+                        {% if form.country.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.country.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Professional Details -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-2 border-b-2 border-indigo-500 flex items-center">
+                        <svg class="h-6 w-6 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        Professional Details
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Consultation Fee (₹)</label>
+                            {{ form.consultation_fee }}
+                            {% if form.consultation_fee.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.consultation_fee.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Languages Spoken <span class="text-red-600">*</span>
+                            </label>
+                            {{ form.languages_spoken }}
+                            <p class="mt-1 text-sm text-gray-500">Separate multiple languages with commas</p>
+                            {% if form.languages_spoken.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.languages_spoken.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Bio/About Yourself <span class="text-red-600">*</span>
+                        </label>
+                        {{ form.bio }}
+                        <p class="mt-1 text-sm text-gray-500">Tell patients about your expertise and approach to treatment</p>
+                        {% if form.bio.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.bio.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                    <a href="{% url 'doctor_dashboard' %}" class="flex items-center px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition duration-200">
+                        Cancel
+                    </a>
+                    <button type="submit" class="flex items-center px-8 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-semibold rounded-lg shadow-lg hover:from-indigo-700 hover:to-blue-700 transform hover:scale-105 transition duration-200">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Update Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Tailwind form styling with visible borders */
+    select, input[type="text"], input[type="number"], input[type="date"], textarea {
+        width: 100%;
+        padding: 0.5rem 1rem;
+        border: 2px solid #d1d5db;
+        border-radius: 0.5rem;
+        background-color: white;
+        transition: all 0.2s;
+        font-size: 0.875rem;
+    }
+    
+    select:focus, input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, textarea:focus {
+        outline: none;
+        border-color: #6366f1;
+        ring: 2px;
+        ring-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    select:hover, input[type="text"]:hover, input[type="number"]:hover, input[type="date"]:hover, textarea:hover {
+        border-color: #9ca3af;
+    }
+    
+    select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+        appearance: none;
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+    
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+    
+    /* Placeholder styling */
+    ::placeholder {
+        color: #9ca3af;
+        opacity: 1;
+    }
+</style>
+{% endblock %}
