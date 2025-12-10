@@ -167,10 +167,59 @@ def logout_view(request):
     return redirect('home')
 
 def patient_dashboard(request):
-    """Patient dashboard"""
+    """Patient dashboard - dynamic view with all patient data"""
     if not request.user.is_authenticated or request.user.user_type != 'patient':
         return redirect('patient_login')
-    return render(request, 'authentication/patient_dashboard.html')
+    
+    from cancer_detection.models import CancerImageAnalysis, PersonalizedTreatmentPlan
+    
+    # Fetch patient data
+    patient_profile = PatientProfile.objects.filter(user=request.user).first()
+    cancer_analyses = CancerImageAnalysis.objects.filter(user=request.user).order_by('-created_at')
+    treatment_plans = PersonalizedTreatmentPlan.objects.filter(patient=request.user).order_by('-created_at')
+    medical_records = MedicalRecord.objects.filter(patient=request.user).order_by('-created_at')
+    
+    # Calculate statistics
+    total_analyses = cancer_analyses.count()
+    analyses_with_tumors = cancer_analyses.filter(tumor_detected=True).count()
+    total_treatment_plans = treatment_plans.count()
+    active_treatment_plans = treatment_plans.filter(status__in=['active', 'pending_review']).count()
+    
+    # Get latest 3 analyses
+    recent_analyses = cancer_analyses[:3]
+    
+    # Get latest 3 treatment plans
+    recent_treatment_plans = treatment_plans[:3]
+    
+    # Get latest 3 medical records
+    recent_medical_records = medical_records[:3]
+    
+    # Profile completion percentage
+    profile_fields = ['date_of_birth', 'gender', 'blood_group', 'address', 'emergency_contact_name', 
+                      'emergency_contact_phone', 'medical_history', 'allergies', 'current_medications']
+    completed_fields = 0
+    if patient_profile:
+        for field in profile_fields:
+            if getattr(patient_profile, field, None):
+                completed_fields += 1
+    profile_completion = (completed_fields / len(profile_fields) * 100) if patient_profile else 0
+    
+    context = {
+        'patient_profile': patient_profile,
+        'total_analyses': total_analyses,
+        'analyses_with_tumors': analyses_with_tumors,
+        'total_treatment_plans': total_treatment_plans,
+        'active_treatment_plans': active_treatment_plans,
+        'recent_analyses': recent_analyses,
+        'recent_treatment_plans': recent_treatment_plans,
+        'recent_medical_records': recent_medical_records,
+        'all_analyses': cancer_analyses,
+        'all_treatment_plans': treatment_plans,
+        'profile_completion': int(profile_completion),
+        'total_medical_records': medical_records.count(),
+    }
+    
+    return render(request, 'authentication/patient_dashboard.html', context)
 
 def doctor_dashboard(request):
     """Doctor dashboard"""
