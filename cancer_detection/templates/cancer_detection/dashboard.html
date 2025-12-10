@@ -58,14 +58,18 @@
     </div>
 
     <!-- Action Buttons -->
-    <div class="flex flex-col sm:flex-row gap-4 mb-10">
-        <a href="{% url 'cancer_detection:upload_image' %}" class="flex-1 bg-gradient-to-r from-primary to-primary/90 hover:shadow-xl text-primary-foreground px-6 py-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center hover:scale-105 group">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+        <a href="{% url 'cancer_detection:upload_image' %}" class="bg-gradient-to-r from-primary to-primary/90 hover:shadow-xl text-primary-foreground px-6 py-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center hover:scale-105 group">
             <i class="fas fa-cloud-upload-alt text-xl mr-2 group-hover:scale-110 transition-transform"></i>
             Upload New Image
         </a>
-        <a href="{% url 'cancer_detection:analysis_list' %}" class="flex-1 bg-card border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground px-6 py-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center hover:scale-105 group">
+        <a href="{% url 'cancer_detection:analysis_list' %}" class="bg-card border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground px-6 py-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center hover:scale-105 group">
             <i class="fas fa-list text-xl mr-2 group-hover:scale-110 transition-transform"></i>
             View All Analyses
+        </a>
+        <a href="{% url 'cancer_detection:treatment_plans_list' %}" class="bg-card border-2 border-green-500 text-green-600 hover:bg-green-500 hover:text-white px-6 py-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center hover:scale-105 group">
+            <i class="fas fa-flask text-xl mr-2 group-hover:scale-110 transition-transform"></i>
+            Treatment Plans
         </a>
     </div>
 
