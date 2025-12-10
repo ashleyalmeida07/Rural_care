@@ -3,69 +3,63 @@
 {% block title %}KYC Status{% endblock %}
 
 {% block content %}
-<div class="fade-in max-w-4xl mx-auto py-8">
-    <div class="bg-white rounded-lg shadow-lg p-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">KYC Verification Status</h1>
-            <p class="text-gray-600">Track your KYC verification progress</p>
+<div class="fade-in min-h-screen py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-10">
+            <h1 class="text-4xl sm:text-5xl font-bold text-foreground mb-3">KYC Verification Status</h1>
+            <p class="text-lg text-muted-foreground">Track your KYC verification progress</p>
         </div>
 
         {% if kyc %}
             <!-- Status Card -->
             <div class="mb-8">
                 {% if kyc.status == 'approved' %}
-                    <div class="p-6 bg-green-50 border-l-4 border-green-500 rounded-lg">
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0">
-                                <svg class="h-8 w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
+                    <div class="bg-green-500/10 border border-green-500/30 rounded-2xl p-8 sm:p-10">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-check-circle text-2xl text-green-600"></i>
                             </div>
-                            <div class="ml-4">
-                                <h3 class="text-lg font-semibold text-green-900">KYC Approved</h3>
-                                <p class="text-green-700 mt-2">Your KYC verification has been approved. You can now access all features of your doctor account.</p>
+                            <div>
+                                <h3 class="text-2xl font-bold text-green-900 dark:text-green-200">KYC Approved ✓</h3>
+                                <p class="text-green-800 dark:text-green-300 mt-2">Your KYC verification has been approved. You can now access all features of your doctor account.</p>
                                 {% if kyc.verified_at %}
-                                <p class="text-sm text-green-600 mt-2">Verified on: {{ kyc.verified_at|date:"M d, Y" }}</p>
+                                <p class="text-sm text-green-700 dark:text-green-400 mt-3 flex items-center"><i class="fas fa-calendar mr-2"></i>Verified on: {{ kyc.verified_at|date:"M d, Y" }}</p>
                                 {% endif %}
                                 {% if kyc.verified_by %}
-                                <p class="text-sm text-green-600">Verified by: {{ kyc.verified_by }}</p>
+                                <p class="text-sm text-green-700 dark:text-green-400 flex items-center"><i class="fas fa-user-check mr-2"></i>Verified by: {{ kyc.verified_by }}</p>
                                 {% endif %}
                             </div>
                         </div>
                     </div>
                 
                 {% elif kyc.status == 'pending' %}
-                    <div class="p-6 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0">
-                                <svg class="h-8 w-8 text-yellow-500 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
+                    <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-8 sm:p-10">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-hourglass-half text-2xl text-yellow-600 animate-pulse"></i>
                             </div>
-                            <div class="ml-4">
-                                <h3 class="text-lg font-semibold text-yellow-900">KYC Under Review</h3>
-                                <p class="text-yellow-700 mt-2">Your KYC application is currently under review by our team. This typically takes 3-5 business days.</p>
+                            <div>
+                                <h3 class="text-2xl font-bold text-yellow-900 dark:text-yellow-200">KYC Under Review</h3>
+                                <p class="text-yellow-800 dark:text-yellow-300 mt-2">Your KYC application is currently under review by our team. This typically takes 3-5 business days.</p>
                                 {% if kyc.submitted_at %}
-                                <p class="text-sm text-yellow-600 mt-2">Submitted on: {{ kyc.submitted_at|date:"M d, Y" }}</p>
+                                <p class="text-sm text-yellow-700 dark:text-yellow-400 mt-3 flex items-center"><i class="fas fa-calendar mr-2"></i>Submitted on: {{ kyc.submitted_at|date:"M d, Y" }}</p>
                                 {% endif %}
                             </div>
                         </div>
                     </div>
                 
                 {% elif kyc.status == 'rejected' %}
-                    <div class="p-6 bg-red-50 border-l-4 border-red-500 rounded-lg">
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0">
-                                <svg class="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m7-7a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
+                    <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-8 sm:p-10">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-times-circle text-2xl text-red-600"></i>
                             </div>
-                            <div class="ml-4">
-                                <h3 class="text-lg font-semibold text-red-900">KYC Rejected</h3>
-                                <p class="text-red-700 mt-2">Your KYC application has been rejected. Please review the reason below and resubmit:</p>
+                            <div>
+                                <h3 class="text-2xl font-bold text-red-900 dark:text-red-200">KYC Rejected</h3>
+                                <p class="text-red-800 dark:text-red-300 mt-2">Your KYC application has been rejected. Please review the reason below and resubmit:</p>
                                 {% if kyc.rejection_reason %}
-                                <div class="mt-3 p-3 bg-red-100 rounded">
-                                    <p class="text-red-800"><strong>Reason:</strong> {{ kyc.rejection_reason }}</p>
+                                <div class="mt-4 p-4 bg-red-500/20 border border-red-500/30 rounded-xl">
+                                    <p class="text-red-900 dark:text-red-200"><strong>Reason:</strong><br>{{ kyc.rejection_reason }}</p>
                                 </div>
                                 {% endif %}
                             </div>
@@ -73,9 +67,16 @@
                     </div>
                 
                 {% else %}
-                    <div class="p-6 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
-                        <h3 class="text-lg font-semibold text-blue-900">KYC Incomplete</h3>
-                        <p class="text-blue-700 mt-2">Your KYC application is incomplete. Please complete and submit to proceed.</p>
+                    <div class="bg-primary/10 border border-primary/30 rounded-2xl p-8 sm:p-10">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-2xl text-primary"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-foreground">KYC Incomplete</h3>
+                                <p class="text-muted-foreground mt-2">Your KYC application is incomplete. Please complete and submit to proceed.</p>
+                            </div>
+                        </div>
                     </div>
                 {% endif %}
             </div>

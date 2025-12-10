@@ -93,96 +93,176 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .fade-in {
-            animation: fadeIn 0.3s ease-out;
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideInDown {
+            from { 
+                opacity: 0; 
+                transform: translateY(-20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        .slide-in-down {
+            animation: slideInDown 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        .slide-in-up {
+            animation: slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes scaleIn {
+            from { 
+                opacity: 0; 
+                transform: scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+        }
+        .scale-in {
+            animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse-subtle {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
         
         /* Dropdown toggle */
         .dropdown-menu {
             display: none;
+            opacity: 0;
+            transform: translateY(-8px);
+            pointer-events: none;
         }
         .dropdown-menu.show {
             display: block;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            animation: slideInDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         /* Smooth transitions */
         * {
-            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s, opacity 0.2s;
+        }
+        
+        /* Button transitions */
+        button, a {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Card hover effects */
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Backdrop blur support */
+        @supports (backdrop-filter: blur(10px)) {
+            .backdrop-blur-sm {
+                backdrop-filter: blur(10px);
+            }
         }
     </style>
 </head>
 <body class="bg-background text-foreground min-h-screen">
     <!-- Navigation -->
-<nav class="border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 sticky top-0 z-50">
+<nav class="border-b border-border/50 bg-card/95 backdrop-blur-xl supports-[backdrop-filter]:bg-card/60 sticky top-0 z-50 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
+        <div class="flex justify-between items-center h-16">
 
             <!-- Left Section: Logo -->
             <div class="flex items-center space-x-8">
-                <a href="/" class="flex items-center space-x-2 group">
-                    <div class="h-9 w-9 rounded-lg bg-primary flex items-center justify-center group-hover:scale-105 transition-transform">
+                <a href="/" class="flex items-center space-x-3 group">
+                    <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
                         <i class="fas fa-heartbeat text-primary-foreground text-lg"></i>
                     </div>
-                    <span class="text-lg font-semibold text-foreground">CancerCare AI</span>
+                    <span class="text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">CancerFreeIndia</span>
                 </a>
 
                 <!-- Detection Dropdown -->
                 <div class="relative hidden md:block">
-                    <button onclick="toggleDetectionDropdown()" class="text-sm font-medium text-muted-foreground hover:text-foreground focus:outline-none flex items-center space-x-1 transition-colors">
+                    <button onclick="toggleDetectionDropdown()" class="text-sm font-medium text-muted-foreground hover:text-foreground focus:outline-none flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg hover:bg-accent/50">
                         <span>Detection</span>
-                        <i class="fas fa-chevron-down text-xs"></i>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-300" id="detectionChevron"></i>
                     </button>
 
                     <!-- Dropdown Menu -->
-                    <div id="detectionDropdown" class="dropdown-menu absolute bg-card border border-border rounded-lg shadow-lg py-2 w-48 mt-2 z-50">
+                    <div id="detectionDropdown" class="dropdown-menu absolute bg-card border border-border/50 rounded-xl shadow-xl py-2 w-48 mt-2 z-50 backdrop-blur-sm">
                         <a href="/cancer-detection/upload"
-                           class="block px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors">
-                            <i class="fas fa-upload mr-2"></i>Upload
+                           class="block px-4 py-3 text-sm text-foreground hover:bg-accent/80 transition-all duration-200 flex items-center space-x-2 hover:translate-x-1">
+                            <i class="fas fa-cloud-upload-alt text-primary"></i>
+                            <span>Upload Image</span>
                         </a>
                         <a href="/cancer-detection/analyses"
-                           class="block px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors">
-                            <i class="fas fa-search mr-2"></i>Analyze
+                           class="block px-4 py-3 text-sm text-foreground hover:bg-accent/80 transition-all duration-200 flex items-center space-x-2 hover:translate-x-1">
+                            <i class="fas fa-chart-bar text-primary"></i>
+                            <span>View Analyses</span>
                         </a>
                     </div>
                 </div>
             </div>
 
             <!-- Right Section: Auth & Theme Toggle -->
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-4">
                 <!-- Theme Toggle -->
-                <button onclick="toggleTheme()" class="h-9 w-9 rounded-lg border border-border hover:bg-accent flex items-center justify-center transition-colors">
-                    <i class="fas fa-sun text-foreground dark:hidden"></i>
-                    <i class="fas fa-moon text-foreground hidden dark:inline"></i>
+                <button onclick="toggleTheme()" class="h-10 w-10 rounded-lg border border-border hover:bg-accent/80 hover:border-primary/50 flex items-center justify-center transition-all duration-300 hover:scale-110">
+                    <i class="fas fa-sun text-foreground dark:hidden transition-transform duration-300"></i>
+                    <i class="fas fa-moon text-foreground hidden dark:inline transition-transform duration-300"></i>
                 </button>
                 
                 {% if user.is_authenticated %}
                     {% if user.user_type == 'doctor' %}
                         <!-- Doctor Profile Dropdown -->
                         <div class="relative">
-                            <button onclick="toggleDropdown()" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors">
+                            <button onclick="toggleDropdown()" class="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-accent/50 transition-all duration-300 group">
                                 {% if user.profile_picture %}
-                                    <img src="{{ user.profile_picture }}" alt="Profile" class="h-8 w-8 rounded-full ring-2 ring-primary">
+                                    <img src="{{ user.profile_picture }}" alt="Profile" class="h-8 w-8 rounded-full ring-2 ring-primary/50 group-hover:ring-primary transition-all duration-300">
                                 {% else %}
-                                    <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                                        <span class="text-sm text-primary-foreground font-semibold">{{ user.first_name.0|default:'D' }}</span>
+                                    <div class="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center ring-2 ring-primary/50 group-hover:ring-primary transition-all duration-300">
+                                        <span class="text-sm text-primary-foreground font-bold">{{ user.first_name.0|default:'D' }}</span>
                                     </div>
                                 {% endif %}
                                 <div class="hidden md:block text-left">
-                                    <p class="text-sm font-medium text-foreground">Dr. {{ user.first_name|default:user.username }}</p>
+                                    <p class="text-sm font-semibold text-foreground">Dr. {{ user.first_name|default:user.username }}</p>
                                     <p class="text-xs text-muted-foreground">{{ user.doctor_profile.specialization|default:"Doctor" }}</p>
                                 </div>
-                                <i class="fas fa-chevron-down text-xs text-muted-foreground"></i>
+                                <i class="fas fa-chevron-down text-xs text-muted-foreground transition-transform duration-300" id="doctorChevron"></i>
                             </button>
 
                             <!-- Dropdown Menu -->
-                            <div id="doctorDropdown" class="dropdown-menu absolute right-0 mt-2 w-80 bg-card rounded-lg shadow-xl border border-border z-50">
+                            <div id="doctorDropdown" class="dropdown-menu absolute right-0 mt-2 w-80 bg-card rounded-xl shadow-2xl border border-border/50 z-50 backdrop-blur-sm">
                                 <!-- Profile Header -->
-                                <div class="px-4 py-4 border-b border-border">
+                                <div class="px-4 py-4 border-b border-border/50 bg-gradient-to-br from-primary/5 to-primary/0">
                                     <div class="flex items-center space-x-3">
                                         {% if user.profile_picture %}
-                                            <img src="{{ user.profile_picture }}" alt="Profile" class="h-12 w-12 rounded-full ring-2 ring-primary">
+                                            <img src="{{ user.profile_picture }}" alt="Profile" class="h-12 w-12 rounded-full ring-2 ring-primary/50">
                                         {% else %}
-                                            <div class="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
-                                                <span class="text-lg text-primary-foreground font-semibold">{{ user.first_name.0|default:'D' }}</span>
+                                            <div class="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center ring-2 ring-primary/50">
+                                                <span class="text-lg text-primary-foreground font-bold">{{ user.first_name.0|default:'D' }}</span>
                                             </div>
                                         {% endif %}
                                         <div class="flex-1">
@@ -194,8 +274,8 @@
 
                                 <!-- Profile Details -->
                                 <div class="px-4 py-3 space-y-2.5 max-h-64 overflow-y-auto">
-                                    <div class="flex items-center space-x-3 text-sm">
-                                        <i class="fas fa-envelope w-4 text-muted-foreground"></i>
+                                    <div class="flex items-center space-x-3 text-sm p-2 rounded-lg hover:bg-accent/50 transition-all duration-200">
+                                        <i class="fas fa-envelope w-4 text-primary/80 flex-shrink-0"></i>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-xs text-muted-foreground">Email</p>
                                             <p class="text-sm font-medium text-foreground truncate">{{ user.email|default:"Not provided" }}</p>
@@ -203,24 +283,24 @@
                                     </div>
                                     
                                     {% if user.doctor_profile %}
-                                        <div class="flex items-center space-x-3 text-sm">
-                                            <i class="fas fa-id-card w-4 text-muted-foreground"></i>
+                                        <div class="flex items-center space-x-3 text-sm p-2 rounded-lg hover:bg-accent/50 transition-all duration-200">
+                                            <i class="fas fa-id-card w-4 text-primary/80 flex-shrink-0"></i>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-xs text-muted-foreground">License Number</p>
                                                 <p class="text-sm font-medium text-foreground truncate">{{ user.doctor_profile.license_number|default:"Not provided" }}</p>
                                             </div>
                                         </div>
                                         
-                                        <div class="flex items-center space-x-3 text-sm">
-                                            <i class="fas fa-hospital w-4 text-muted-foreground"></i>
+                                        <div class="flex items-center space-x-3 text-sm p-2 rounded-lg hover:bg-accent/50 transition-all duration-200">
+                                            <i class="fas fa-hospital w-4 text-primary/80 flex-shrink-0"></i>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-xs text-muted-foreground">Hospital/Clinic</p>
                                                 <p class="text-sm font-medium text-foreground truncate">{{ user.doctor_profile.hospital_affiliation|default:"Not provided" }}</p>
                                             </div>
                                         </div>
                                         
-                                        <div class="flex items-center space-x-3 text-sm">
-                                            <i class="fas fa-map-marker-alt w-4 text-muted-foreground"></i>
+                                        <div class="flex items-center space-x-3 text-sm p-2 rounded-lg hover:bg-accent/50 transition-all duration-200">
+                                            <i class="fas fa-map-marker-alt w-4 text-primary/80 flex-shrink-0"></i>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-xs text-muted-foreground">Location</p>
                                                 <p class="text-sm font-medium text-foreground truncate">
@@ -233,8 +313,8 @@
                                             </div>
                                         </div>
                                         
-                                        <div class="flex items-center space-x-3 text-sm">
-                                            <i class="fas fa-clock w-4 text-muted-foreground"></i>
+                                        <div class="flex items-center space-x-3 text-sm p-2 rounded-lg hover:bg-accent/50 transition-all duration-200">
+                                            <i class="fas fa-clock w-4 text-primary/80 flex-shrink-0"></i>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-xs text-muted-foreground">Experience</p>
                                                 <p class="text-sm font-medium text-foreground">
@@ -250,12 +330,12 @@
                                 </div>
 
                                 <!-- Action Buttons -->
-                                <div class="px-4 py-3 border-t border-border space-y-2">
-                                    <a href="{% url 'doctor_profile_edit' %}" class="flex items-center justify-center w-full px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-md hover:bg-primary/90 transition-colors">
+                                <div class="px-4 py-3 border-t border-border/50 bg-gradient-to-br from-accent/30 to-accent/0 space-y-2">
+                                    <a href="{% url 'doctor_profile_edit' %}" class="flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground text-sm font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300">
                                         <i class="fas fa-edit mr-2"></i>
                                         Edit Profile
                                     </a>
-                                    <a href="{% url 'logout' %}" class="flex items-center justify-center w-full px-4 py-2 border border-border text-sm font-medium rounded-md hover:bg-accent transition-colors">
+                                    <a href="{% url 'logout' %}" class="flex items-center justify-center w-full px-4 py-2.5 border border-border/50 text-sm font-semibold rounded-lg hover:bg-accent/80 hover:scale-105 transition-all duration-300">
                                         <i class="fas fa-sign-out-alt mr-2"></i>
                                         Logout
                                     </a>
@@ -265,30 +345,30 @@
                     {% else %}
                         <!--Patient/Other Users -->
                         <div class="relative">
-                            <button onclick="togglePatientDropdown()" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors">
+                            <button onclick="togglePatientDropdown()" class="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-accent/50 transition-all duration-300 group">
                                 {% if user.profile_picture %}
-                                    <img src="{{ user.profile_picture }}" alt="Profile" class="h-8 w-8 rounded-full ring-2 ring-primary">
+                                    <img src="{{ user.profile_picture }}" alt="Profile" class="h-8 w-8 rounded-full ring-2 ring-primary/50 group-hover:ring-primary transition-all duration-300">
                                 {% else %}
-                                    <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                                        <span class="text-sm text-primary-foreground font-semibold">{{ user.first_name.0|default:'P' }}</span>
+                                    <div class="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center ring-2 ring-primary/50 group-hover:ring-primary transition-all duration-300">
+                                        <span class="text-sm text-primary-foreground font-bold">{{ user.first_name.0|default:'P' }}</span>
                                     </div>
                                 {% endif %}
                                 <div class="hidden md:block text-left">
-                                    <p class="text-sm font-medium text-foreground">{{ user.first_name|default:user.username }}</p>
+                                    <p class="text-sm font-semibold text-foreground">{{ user.first_name|default:user.username }}</p>
                                     <p class="text-xs text-muted-foreground">Patient</p>
                                 </div>
-                                <i class="fas fa-chevron-down text-xs text-muted-foreground"></i>
+                                <i class="fas fa-chevron-down text-xs text-muted-foreground transition-transform duration-300" id="patientChevron"></i>
                             </button>
 
                             <!-- Dropdown Menu -->
-                            <div id="patientDropdown" class="dropdown-menu absolute right-0 mt-2 w-80 bg-card rounded-lg shadow-xl border border-border z-50">
-                                <div class="px-4 py-4 border-b border-border">
+                            <div id="patientDropdown" class="dropdown-menu absolute right-0 mt-2 w-80 bg-card rounded-xl shadow-2xl border border-border/50 z-50 backdrop-blur-sm">
+                                <div class="px-4 py-4 border-b border-border/50 bg-gradient-to-br from-primary/5 to-primary/0">
                                     <div class="flex items-center space-x-3">
                                         {% if user.profile_picture %}
-                                            <img src="{{ user.profile_picture }}" alt="Profile" class="h-12 w-12 rounded-full ring-2 ring-primary">
+                                            <img src="{{ user.profile_picture }}" alt="Profile" class="h-12 w-12 rounded-full ring-2 ring-primary/50">
                                         {% else %}
-                                            <div class="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
-                                                <span class="text-lg text-primary-foreground font-semibold">{{ user.first_name.0|default:'P' }}</span>
+                                            <div class="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center ring-2 ring-primary/50">
+                                                <span class="text-lg text-primary-foreground font-bold">{{ user.first_name.0|default:'P' }}</span>
                                             </div>
                                         {% endif %}
                                         <div class="flex-1">
@@ -299,8 +379,8 @@
                                 </div>
 
                                 <div class="px-4 py-3 space-y-2.5 max-h-64 overflow-y-auto">
-                                    <div class="flex items-center space-x-3 text-sm">
-                                        <i class="fas fa-envelope w-4 text-muted-foreground"></i>
+                                    <div class="flex items-center space-x-3 text-sm p-2 rounded-lg hover:bg-accent/50 transition-all duration-200">
+                                        <i class="fas fa-envelope w-4 text-primary/80 flex-shrink-0"></i>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-xs text-muted-foreground">Email</p>
                                             <p class="text-sm font-medium text-foreground truncate">{{ user.email|default:"Not provided" }}</p>
@@ -308,8 +388,8 @@
                                     </div>
                                     
                                     {% if user.phone_number %}
-                                        <div class="flex items-center space-x-3 text-sm">
-                                            <i class="fas fa-phone w-4 text-muted-foreground"></i>
+                                        <div class="flex items-center space-x-3 text-sm p-2 rounded-lg hover:bg-accent/50 transition-all duration-200">
+                                            <i class="fas fa-phone w-4 text-primary/80 flex-shrink-0"></i>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-xs text-muted-foreground">Phone</p>
                                                 <p class="text-sm font-medium text-foreground">{{ user.phone_number }}</p>
@@ -319,8 +399,8 @@
                                     
                                     {% if user.patient_profile %}
                                         {% if user.patient_profile.date_of_birth %}
-                                            <div class="flex items-center space-x-3 text-sm">
-                                                <i class="fas fa-calendar w-4 text-muted-foreground"></i>
+                                            <div class="flex items-center space-x-3 text-sm p-2 rounded-lg hover:bg-accent/50 transition-all duration-200">
+                                                <i class="fas fa-calendar w-4 text-primary/80 flex-shrink-0"></i>
                                                 <div class="flex-1 min-w-0">
                                                     <p class="text-xs text-muted-foreground">Date of Birth</p>
                                                     <p class="text-sm font-medium text-foreground">{{ user.patient_profile.date_of_birth|date:"M d, Y" }}</p>
@@ -329,8 +409,8 @@
                                         {% endif %}
                                         
                                         {% if user.patient_profile.gender %}
-                                            <div class="flex items-center space-x-3 text-sm">
-                                                <i class="fas fa-user w-4 text-muted-foreground"></i>
+                                            <div class="flex items-center space-x-3 text-sm p-2 rounded-lg hover:bg-accent/50 transition-all duration-200">
+                                                <i class="fas fa-user w-4 text-primary/80 flex-shrink-0"></i>
                                                 <div class="flex-1 min-w-0">
                                                     <p class="text-xs text-muted-foreground">Gender</p>
                                                     <p class="text-sm font-medium text-foreground">{{ user.patient_profile.gender|title }}</p>
@@ -339,8 +419,8 @@
                                         {% endif %}
                                         
                                         {% if user.patient_profile.blood_group %}
-                                            <div class="flex items-center space-x-3 text-sm">
-                                                <i class="fas fa-tint w-4 text-muted-foreground"></i>
+                                            <div class="flex items-center space-x-3 text-sm p-2 rounded-lg hover:bg-accent/50 transition-all duration-200">
+                                                <i class="fas fa-tint w-4 text-primary/80 flex-shrink-0"></i>
                                                 <div class="flex-1 min-w-0">
                                                     <p class="text-xs text-muted-foreground">Blood Group</p>
                                                     <p class="text-sm font-medium text-foreground">{{ user.patient_profile.blood_group }}</p>
@@ -349,8 +429,8 @@
                                         {% endif %}
                                         
                                         {% if user.patient_profile.emergency_contact_name %}
-                                            <div class="flex items-center space-x-3 text-sm">
-                                                <i class="fas fa-exclamation-triangle w-4 text-muted-foreground"></i>
+                                            <div class="flex items-center space-x-3 text-sm p-2 rounded-lg hover:bg-accent/50 transition-all duration-200">
+                                                <i class="fas fa-exclamation-triangle w-4 text-primary/80 flex-shrink-0"></i>
                                                 <div class="flex-1 min-w-0">
                                                     <p class="text-xs text-muted-foreground">Emergency Contact</p>
                                                     <p class="text-sm font-medium text-foreground">{{ user.patient_profile.emergency_contact_name }}</p>
@@ -363,12 +443,12 @@
                                     {% endif %}
                                 </div>
 
-                                <div class="px-4 py-3 border-t border-border space-y-2">
-                                    <a href="{% url 'patient_dashboard' %}" class="flex items-center justify-center w-full px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-md hover:bg-primary/90 transition-colors">
+                                <div class="px-4 py-3 border-t border-border/50 bg-gradient-to-br from-accent/30 to-accent/0 space-y-2">
+                                    <a href="{% url 'patient_dashboard' %}" class="flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground text-sm font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300">
                                         <i class="fas fa-home mr-2"></i>
                                         Dashboard
                                     </a>
-                                    <a href="{% url 'logout' %}" class="flex items-center justify-center w-full px-4 py-2 border border-border text-sm font-medium rounded-md hover:bg-accent transition-colors">
+                                    <a href="{% url 'logout' %}" class="flex items-center justify-center w-full px-4 py-2.5 border border-border/50 text-sm font-semibold rounded-lg hover:bg-accent/80 hover:scale-105 transition-all duration-300">
                                         <i class="fas fa-sign-out-alt mr-2"></i>
                                         Logout
                                     </a>
@@ -378,8 +458,8 @@
                     {% endif %}
                 {% else %}
                     <a href="{% url 'login' %}"
-                       class="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-md hover:bg-primary/90 transition-colors">
-                        Login
+                       class="px-6 py-2 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground text-sm font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300">
+                        Sign In
                     </a>
                 {% endif %}
             </div>
@@ -390,22 +470,31 @@
 
     <!-- Messages -->
     {% if messages %}
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 space-y-3">
             {% for message in messages %}
-                <div class="bg-{{ message.tags }}-100 border border-{{ message.tags }}-400 text-{{ message.tags }}-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <span class="block sm:inline">{{ message }}</span>
+                <div class="bg-{{ message.tags }}-50 border border-{{ message.tags }}-200 text-{{ message.tags }}-800 px-4 py-3 rounded-lg relative scale-in shadow-sm flex items-start space-x-3" role="alert">
+                    {% if message.tags == 'success' %}
+                        <i class="fas fa-check-circle text-{{ message.tags }}-600 mt-0.5 flex-shrink-0"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="fas fa-exclamation-circle text-{{ message.tags }}-600 mt-0.5 flex-shrink-0"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="fas fa-exclamation-triangle text-{{ message.tags }}-600 mt-0.5 flex-shrink-0"></i>
+                    {% else %}
+                        <i class="fas fa-info-circle text-{{ message.tags }}-600 mt-0.5 flex-shrink-0"></i>
+                    {% endif %}
+                    <span class="flex-1">{{ message }}</span>
                 </div>
             {% endfor %}
         </div>
     {% endif %}
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {% block content %}{% endblock %}
     </main>
 
     <script>
-        // Theme Toggle
+        // Theme Toggle with smooth transition
         function toggleTheme() {
             const html = document.documentElement;
             const isDark = html.classList.contains('dark');
@@ -429,17 +518,23 @@
         
         function toggleDropdown() {
             const dropdown = document.getElementById('doctorDropdown');
+            const chevron = document.getElementById('doctorChevron');
             dropdown.classList.toggle('show');
+            chevron.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
         }
         
         function togglePatientDropdown() {
             const dropdown = document.getElementById('patientDropdown');
+            const chevron = document.getElementById('patientChevron');
             dropdown.classList.toggle('show');
+            chevron.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
         }
         
         function toggleDetectionDropdown() {
             const dropdown = document.getElementById('detectionDropdown');
+            const chevron = document.getElementById('detectionChevron');
             dropdown.classList.toggle('show');
+            chevron.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
         }
 
         // Close dropdown when clicking outside
@@ -454,14 +549,20 @@
             
             if (!doctorButton && doctorDropdown && !doctorDropdown.contains(e.target)) {
                 doctorDropdown.classList.remove('show');
+                const chevron = document.getElementById('doctorChevron');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
             }
             
             if (!patientButton && patientDropdown && !patientDropdown.contains(e.target)) {
                 patientDropdown.classList.remove('show');
+                const chevron = document.getElementById('patientChevron');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
             }
             
             if (!detectionButton && detectionDropdown && !detectionDropdown.contains(e.target)) {
                 detectionDropdown.classList.remove('show');
+                const chevron = document.getElementById('detectionChevron');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
             }
         });
     </script>

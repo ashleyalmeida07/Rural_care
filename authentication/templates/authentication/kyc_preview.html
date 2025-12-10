@@ -3,109 +3,123 @@
 {% block title %}KYC Preview{% endblock %}
 
 {% block content %}
-<div class="fade-in max-w-4xl mx-auto py-8">
-    <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
-        <div class="mb-8 flex items-center justify-between">
-            <div>
-                <h1 class="text-4xl font-bold text-gray-900">KYC Application Preview</h1>
-                <p class="text-gray-600 mt-2">Review your submitted KYC information</p>
-            </div>
-            <div class="text-right">
-                <span class="px-4 py-2 rounded-full text-sm font-semibold 
-                    {% if kyc.status == 'approved' %}bg-green-100 text-green-800{% elif kyc.status == 'pending' %}bg-yellow-100 text-yellow-800{% elif kyc.status == 'rejected' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
-                    {{ kyc.get_status_display }}
-                </span>
+<div class="fade-in min-h-screen py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header Section -->
+        <div class="mb-10">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-4xl sm:text-5xl font-bold text-foreground">KYC Application Preview</h1>
+                    <p class="text-lg text-muted-foreground mt-2">Review your submitted KYC information</p>
+                </div>
+                <div class="px-4 py-2 rounded-full text-sm font-semibold w-fit
+                    {% if kyc.status == 'approved' %}bg-green-500/10 text-green-700 border border-green-500/30{% elif kyc.status == 'pending' %}bg-yellow-500/10 text-yellow-700 border border-yellow-500/30{% elif kyc.status == 'rejected' %}bg-red-500/10 text-red-700 border border-red-500/30{% else %}bg-blue-500/10 text-blue-700 border border-blue-500/30{% endif %}">
+                    <i class="fas fa-circle text-xs mr-2"></i>{{ kyc.get_status_display }}
+                </div>
             </div>
         </div>
 
         <!-- Personal Information -->
-        <section class="mb-8 pb-8 border-b">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Personal Information</h2>
+        <section class="bg-card border border-border/50 rounded-2xl p-8 sm:p-10 mb-6 shadow-sm">
+            <div class="flex items-center mb-8">
+                <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center mr-3">
+                    <i class="fas fa-user text-primary"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-foreground">Personal Information</h2>
+            </div>
             <div class="grid md:grid-cols-2 gap-8">
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Full Name</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.full_name }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Full Name</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.full_name }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Date of Birth</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.date_of_birth|date:"M d, Y" }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Date of Birth</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.date_of_birth|date:"M d, Y" }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Gender</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.get_gender_display }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Gender</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.get_gender_display }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Nationality</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.nationality }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nationality</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.nationality }}</p>
                 </div>
             </div>
         </section>
 
         <!-- Contact Information -->
-        <section class="mb-8 pb-8 border-b">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Contact Information</h2>
+        <section class="bg-card border border-border/50 rounded-2xl p-8 sm:p-10 mb-6 shadow-sm">
+            <div class="flex items-center mb-8">
+                <div class="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center mr-3">
+                    <i class="fas fa-phone text-blue-600"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-foreground">Contact Information</h2>
+            </div>
             <div class="grid md:grid-cols-2 gap-8">
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Personal Email</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.personal_email }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Personal Email</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.personal_email }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Mobile Number</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.mobile_number }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Mobile Number</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.mobile_number }}</p>
                 </div>
                 <div class="md:col-span-2">
-                    <p class="text-sm text-gray-500 font-semibold">Residential Address</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.residential_address }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Residential Address</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.residential_address }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">City</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.city }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">City</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.city }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">State/Province</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.state }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">State/Province</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.state }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Postal Code</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.postal_code }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Postal Code</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.postal_code }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Country</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.country }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Country</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.country }}</p>
                 </div>
             </div>
         </section>
 
         <!-- Medical License -->
-        <section class="mb-8 pb-8 border-b">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Medical License Information</h2>
+        <section class="bg-card border border-border/50 rounded-2xl p-8 sm:p-10 mb-6 shadow-sm">
+            <div class="flex items-center mb-8">
+                <div class="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center mr-3">
+                    <i class="fas fa-certificate text-green-600"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-foreground">Medical License Information</h2>
+            </div>
             <div class="grid md:grid-cols-2 gap-8">
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">License Number</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.license_number_verified }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">License Number</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.license_number_verified }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Issuing Authority</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.license_issuing_authority }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Issuing Authority</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.license_issuing_authority }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Issue Date</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.license_issue_date|date:"M d, Y" }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Issue Date</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.license_issue_date|date:"M d, Y" }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Expiry Date</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.license_expiry_date|date:"M d, Y" }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Expiry Date</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.license_expiry_date|date:"M d, Y" }}</p>
                 </div>
                 {% if kyc.license_document %}
                 <div class="md:col-span-2">
-                    <p class="text-sm text-gray-500 font-semibold mb-2">License Document</p>
-                    <div class="flex items-center p-3 bg-green-50 rounded-lg border border-green-200">
-                        <svg class="h-6 w-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">License Document</p>
+                    <div class="flex items-center p-4 bg-green-500/10 rounded-xl border border-green-500/30 group hover:shadow-md transition-all duration-200">
+                        <i class="fas fa-file-check text-green-600 text-lg mr-3"></i>
                         <div>
-                            <p class="text-sm font-semibold text-gray-900">{{ kyc.license_document.name }}</p>
-                            <p class="text-xs text-gray-600">Uploaded</p>
+                            <p class="text-sm font-semibold text-foreground">{{ kyc.license_document.name }}</p>
+                            <p class="text-xs text-muted-foreground">Uploaded</p>
                         </div>
                     </div>
                 </div>
@@ -114,31 +128,34 @@
         </section>
 
         <!-- Education -->
-        <section class="mb-8 pb-8 border-b">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Educational Qualification</h2>
+        <section class="bg-card border border-border/50 rounded-2xl p-8 sm:p-10 mb-6 shadow-sm">
+            <div class="flex items-center mb-8">
+                <div class="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center mr-3">
+                    <i class="fas fa-graduation-cap text-purple-600"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-foreground">Educational Qualification</h2>
+            </div>
             <div class="grid md:grid-cols-2 gap-8">
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Medical Degree</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.medical_degree }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Medical Degree</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.medical_degree }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Medical University</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.medical_university }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Medical University</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.medical_university }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Graduation Year</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.graduation_year }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Graduation Year</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.graduation_year }}</p>
                 </div>
                 {% if kyc.degree_certificate %}
                 <div class="md:col-span-2">
-                    <p class="text-sm text-gray-500 font-semibold mb-2">Degree Certificate</p>
-                    <div class="flex items-center p-3 bg-green-50 rounded-lg border border-green-200">
-                        <svg class="h-6 w-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Degree Certificate</p>
+                    <div class="flex items-center p-4 bg-green-500/10 rounded-xl border border-green-500/30 group hover:shadow-md transition-all duration-200">
+                        <i class="fas fa-file-check text-green-600 text-lg mr-3"></i>
                         <div>
-                            <p class="text-sm font-semibold text-gray-900">{{ kyc.degree_certificate.name }}</p>
-                            <p class="text-xs text-gray-600">Uploaded</p>
+                            <p class="text-sm font-semibold text-foreground">{{ kyc.degree_certificate.name }}</p>
+                            <p class="text-xs text-muted-foreground">Uploaded</p>
                         </div>
                     </div>
                 </div>
@@ -147,37 +164,40 @@
         </section>
 
         <!-- Professional Information -->
-        <section class="mb-8 pb-8 border-b">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Professional Information</h2>
+        <section class="bg-card border border-border/50 rounded-2xl p-8 sm:p-10 mb-6 shadow-sm">
+            <div class="flex items-center mb-8">
+                <div class="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center mr-3">
+                    <i class="fas fa-briefcase text-amber-600"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-foreground">Professional Information</h2>
+            </div>
             <div class="grid md:grid-cols-2 gap-8">
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Designation</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.designation }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Designation</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.designation }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Department/Specialty</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.department_specialty }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Department/Specialty</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.department_specialty }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Years of Practice</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.years_of_practice }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Years of Practice</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.years_of_practice }}</p>
                 </div>
                 {% if kyc.current_hospital %}
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Current Hospital/Clinic</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.current_hospital }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Current Hospital/Clinic</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.current_hospital }}</p>
                 </div>
                 {% endif %}
                 {% if kyc.employment_document %}
                 <div class="md:col-span-2">
-                    <p class="text-sm text-gray-500 font-semibold mb-2">Employment Document</p>
-                    <div class="flex items-center p-3 bg-green-50 rounded-lg border border-green-200">
-                        <svg class="h-6 w-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Employment Document</p>
+                    <div class="flex items-center p-4 bg-green-500/10 rounded-xl border border-green-500/30 group hover:shadow-md transition-all duration-200">
+                        <i class="fas fa-file-check text-green-600 text-lg mr-3"></i>
                         <div>
-                            <p class="text-sm font-semibold text-gray-900">{{ kyc.employment_document.name }}</p>
-                            <p class="text-xs text-gray-600">Uploaded</p>
+                            <p class="text-sm font-semibold text-foreground">{{ kyc.employment_document.name }}</p>
+                            <p class="text-xs text-muted-foreground">Uploaded</p>
                         </div>
                     </div>
                 </div>
@@ -186,27 +206,30 @@
         </section>
 
         <!-- Identity Verification -->
-        <section class="mb-8 pb-8 border-b">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Identity Verification</h2>
+        <section class="bg-card border border-border/50 rounded-2xl p-8 sm:p-10 mb-6 shadow-sm">
+            <div class="flex items-center mb-8">
+                <div class="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center mr-3">
+                    <i class="fas fa-id-card text-red-600"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-foreground">Identity Verification</h2>
+            </div>
             <div class="grid md:grid-cols-2 gap-8">
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Document Type</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.get_identity_document_type_display }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Document Type</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.get_identity_document_type_display }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Document Number</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.identity_document_number }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Document Number</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.identity_document_number }}</p>
                 </div>
                 {% if kyc.identity_document_file %}
                 <div class="md:col-span-2">
-                    <p class="text-sm text-gray-500 font-semibold mb-2">Identity Document</p>
-                    <div class="flex items-center p-3 bg-green-50 rounded-lg border border-green-200">
-                        <svg class="h-6 w-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Identity Document</p>
+                    <div class="flex items-center p-4 bg-green-500/10 rounded-xl border border-green-500/30 group hover:shadow-md transition-all duration-200">
+                        <i class="fas fa-file-check text-green-600 text-lg mr-3"></i>
                         <div>
-                            <p class="text-sm font-semibold text-gray-900">{{ kyc.identity_document_file.name }}</p>
-                            <p class="text-xs text-gray-600">Uploaded</p>
+                            <p class="text-sm font-semibold text-foreground">{{ kyc.identity_document_file.name }}</p>
+                            <p class="text-xs text-muted-foreground">Uploaded</p>
                         </div>
                     </div>
                 </div>
@@ -215,23 +238,26 @@
         </section>
 
         <!-- Address Proof -->
-        <section class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Address Proof</h2>
+        <section class="bg-card border border-border/50 rounded-2xl p-8 sm:p-10 mb-6 shadow-sm">
+            <div class="flex items-center mb-8">
+                <div class="w-10 h-10 bg-cyan-500/10 rounded-xl flex items-center justify-center mr-3">
+                    <i class="fas fa-map-location-dot text-cyan-600"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-foreground">Address Proof</h2>
+            </div>
             <div class="grid md:grid-cols-2 gap-8">
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Proof Type</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.get_address_proof_type_display }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Proof Type</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.get_address_proof_type_display }}</p>
                 </div>
                 {% if kyc.address_proof_file %}
                 <div class="md:col-span-2">
-                    <p class="text-sm text-gray-500 font-semibold mb-2">Address Proof Document</p>
-                    <div class="flex items-center p-3 bg-green-50 rounded-lg border border-green-200">
-                        <svg class="h-6 w-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Address Proof Document</p>
+                    <div class="flex items-center p-4 bg-green-500/10 rounded-xl border border-green-500/30 group hover:shadow-md transition-all duration-200">
+                        <i class="fas fa-file-check text-green-600 text-lg mr-3"></i>
                         <div>
-                            <p class="text-sm font-semibold text-gray-900">{{ kyc.address_proof_file.name }}</p>
-                            <p class="text-xs text-gray-600">Uploaded</p>
+                            <p class="text-sm font-semibold text-foreground">{{ kyc.address_proof_file.name }}</p>
+                            <p class="text-xs text-muted-foreground">Uploaded</p>
                         </div>
                     </div>
                 </div>
@@ -241,40 +267,53 @@
 
         <!-- Admin Notes (if any) -->
         {% if kyc.admin_notes %}
-        <section class="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 class="text-lg font-semibold text-blue-900 mb-2">Admin Notes</h3>
-            <p class="text-blue-800">{{ kyc.admin_notes }}</p>
+        <section class="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-8 sm:p-10 mb-6 shadow-sm">
+            <div class="flex items-center mb-4">
+                <div class="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center mr-3">
+                    <i class="fas fa-comment text-blue-600"></i>
+                </div>
+                <h3 class="text-lg font-bold text-foreground">Admin Notes</h3>
+            </div>
+            <p class="text-foreground">{{ kyc.admin_notes }}</p>
         </section>
         {% endif %}
 
         <!-- Submission Info -->
-        <section class="mb-8 p-6 bg-gray-50 border border-gray-200 rounded-lg">
+        <section class="bg-card border border-border/50 rounded-2xl p-8 sm:p-10 mb-8 shadow-sm">
+            <div class="flex items-center mb-8">
+                <div class="w-10 h-10 bg-muted/50 rounded-xl flex items-center justify-center mr-3">
+                    <i class="fas fa-clock text-muted-foreground"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-foreground">Timeline</h2>
+            </div>
             <div class="grid md:grid-cols-2 gap-8">
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Application Submitted</p>
-                    <p class="text-lg text-gray-900 mt-1">
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Application Submitted</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">
                         {% if kyc.submitted_at %}
                             {{ kyc.submitted_at|date:"M d, Y h:i A" }}
                         {% else %}
-                            Not yet submitted
+                            <span class="text-muted-foreground">Not yet submitted</span>
                         {% endif %}
                     </p>
                 </div>
                 {% if kyc.verified_at %}
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold">Verified On</p>
-                    <p class="text-lg text-gray-900 mt-1">{{ kyc.verified_at|date:"M d, Y h:i A" }}</p>
+                    <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Verified On</p>
+                    <p class="text-lg text-foreground font-semibold mt-2">{{ kyc.verified_at|date:"M d, Y h:i A" }}</p>
                 </div>
                 {% endif %}
             </div>
         </section>
 
         <!-- Action Buttons -->
-        <div class="flex gap-4 pt-8 border-t">
-            <a href="{% url 'kyc_status' %}" class="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition duration-200">
+        <div class="flex flex-col sm:flex-row gap-4 pt-8 border-t border-border/50">
+            <a href="{% url 'kyc_status' %}" class="px-8 py-3 bg-gradient-to-r from-primary to-primary/90 hover:shadow-xl text-primary-foreground font-bold rounded-xl transition-all duration-200 hover:scale-105 inline-flex items-center justify-center gap-2 flex-shrink-0">
+                <i class="fas fa-arrow-left"></i>
                 Back to Status
             </a>
-            <a href="{% url 'doctor_dashboard' %}" class="px-8 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition duration-200">
+            <a href="{% url 'doctor_dashboard' %}" class="px-8 py-3 bg-muted hover:bg-muted/80 text-foreground font-bold rounded-xl transition-all duration-200 inline-flex items-center justify-center gap-2 flex-shrink-0">
+                <i class="fas fa-home"></i>
                 Back to Dashboard
             </a>
         </div>

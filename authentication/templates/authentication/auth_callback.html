@@ -5,26 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Authenticating...</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --foreground: #0f172a;
+            --background: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --muted: #f1f5f9;
+            --muted-foreground: #64748b;
+            --primary: #3b82f6;
+            --accent: #f1f5f9;
+        }
+        
+        [data-theme="dark"] {
+            --foreground: #f8fafc;
+            --background: #0f172a;
+            --card: #1e293b;
+            --border: #334155;
+            --muted: #1e293b;
+            --muted-foreground: #94a3b8;
+            --primary: #60a5fa;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">
-    <div id="auth-content" class="text-center">
-        <div class="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mb-4"></div>
-        <h2 class="text-2xl font-bold text-gray-900 mb-2">Authenticating...</h2>
-        <p class="text-gray-600">Please wait while we sign you in</p>
+<body class="min-h-screen flex items-center justify-center px-4">
+    <div id="auth-content" class="text-center fade-in">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6">
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-bold text-foreground mb-3">Authenticating...</h2>
+        <p class="text-muted-foreground text-base sm:text-lg">Please wait while we sign you in securely</p>
     </div>
 
     <!-- Error Display -->
-    <div id="error-content" class="hidden max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
-        <div class="text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
+    <div id="error-content" class="hidden max-w-md mx-auto w-full fade-in">
+        <div class="bg-card border border-border rounded-2xl shadow-lg p-8 sm:p-10 text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-red-500/10 rounded-full mb-6">
+                <i class="fas fa-exclamation-circle text-3xl text-red-600"></i>
             </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Authentication Error</h3>
-            <p id="error-message" class="text-sm text-gray-600 mb-6"></p>
-            <a id="redirect-link" href="/login/" class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Go to Login
+            <h3 class="text-2xl font-bold text-foreground mb-3">Authentication Error</h3>
+            <p id="error-message" class="text-muted-foreground mb-8 text-base"></p>
+            <a id="redirect-link" href="/login/" class="inline-flex justify-center items-center px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl hover:shadow-lg transition-all duration-200 hover:scale-105 gap-2">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Login</span>
             </a>
         </div>
     </div>
