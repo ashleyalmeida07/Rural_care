@@ -152,6 +152,10 @@ SESSION_SAVE_EVERY_REQUEST = True
 # Custom user model
 AUTH_USER_MODEL = 'authentication.User'
 
+# Login redirect URL for @login_required decorator
+LOGIN_URL = 'login'  # Redirects unauthenticated users to main login page
+LOGIN_REDIRECT_URL = 'patient_dashboard'  # Redirects to patient dashboard after successful login
+
 # Media files (uploaded images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

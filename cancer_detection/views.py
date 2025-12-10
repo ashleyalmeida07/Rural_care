@@ -9,6 +9,9 @@ from .opencv_analyzer import CancerImageAnalyzer
 import os
 import json
 
+# All views in this module require authentication
+# Unauthenticated users will be redirected to LOGIN_URL (patient_login)
+
 
 @login_required
 def upload_image(request):
