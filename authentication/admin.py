@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, PatientProfile, DoctorProfile, DoctorKYC
+from .models import User, PatientProfile, DoctorProfile, DoctorKYC, PatientQRCode, QRCodeScanLog
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -31,38 +31,35 @@ class DoctorProfileAdmin(admin.ModelAdmin):
 
 @admin.register(DoctorKYC)
 class DoctorKYCAdmin(admin.ModelAdmin):
-    list_display = ('get_doctor_name', 'status', 'submitted_at', 'verified_at')
-    search_fields = ('doctor__user__username', 'doctor__user__email', 'license_number_verified', 'full_name')
-    list_filter = ('status', 'submitted_at', 'verified_at')
+    list_display = ('get_doctor_name', 'status', 'created_at', 'verified_at')
+    search_fields = ('doctor__user__username', 'doctor__user__email', 'full_name')
+    list_filter = ('status', 'created_at', 'verified_at')
     readonly_fields = ('created_at', 'updated_at')
     
     fieldsets = (
         ('Personal Information', {
-            'fields': ('doctor', 'full_name', 'date_of_birth', 'gender', 'nationality')
+            'fields': ('doctor', 'full_name', 'date_of_birth', 'gender')
         }),
-        ('Contact Information', {
-            'fields': ('personal_email', 'mobile_number', 'residential_address', 'city', 'state', 'postal_code', 'country')
+        ('Identification', {
+            'fields': ('id_type', 'id_number', 'id_document')
         }),
-        ('Medical License', {
-            'fields': ('license_number_verified', 'license_issuing_authority', 'license_issue_date', 'license_expiry_date', 'license_document')
+        ('Medical Registration', {
+            'fields': ('registration_number', 'registration_council', 'registration_document')
         }),
-        ('Education', {
-            'fields': ('medical_degree', 'medical_university', 'graduation_year', 'degree_certificate')
-        }),
-        ('Professional Information', {
-            'fields': ('current_hospital', 'designation', 'department_specialty', 'years_of_practice', 'employment_document')
-        }),
-        ('Identity Verification', {
-            'fields': ('identity_document_type', 'identity_document_number', 'identity_document_file')
+        ('Qualifications', {
+            'fields': ('degree_document',)
         }),
         ('Address Proof', {
-            'fields': ('address_proof_type', 'address_proof_file')
+            'fields': ('address_proof_type', 'address_proof_document')
+        }),
+        ('Bank Details', {
+            'fields': ('bank_account_holder', 'bank_account_number', 'bank_ifsc_code')
         }),
         ('KYC Status', {
-            'fields': ('status', 'rejection_reason', 'admin_notes')
+            'fields': ('status', 'verification_notes')
         }),
         ('Verification', {
-            'fields': ('verified_at', 'verified_by', 'created_at', 'updated_at', 'submitted_at')
+            'fields': ('verified_at', 'verified_by', 'created_at', 'updated_at')
         }),
     )
     
@@ -76,3 +73,52 @@ class DoctorKYCAdmin(admin.ModelAdmin):
             obj.verified_at = timezone.now()
             obj.verified_by = request.user.get_full_name() or request.user.username
         super().save_model(request, obj, form, change)
+
+
+@admin.register(PatientQRCode)
+class PatientQRCodeAdmin(admin.ModelAdmin):
+    list_display = ('patient', 'status', 'is_active', 'created_at', 'expires_at', 'last_scanned_at')
+    search_fields = ('patient__username', 'patient__email', 'encrypted_token')
+    list_filter = ('status', 'is_active', 'created_at')
+    readonly_fields = ('id', 'encrypted_token', 'created_at', 'regenerated_at', 'last_scanned_at')
+    
+    fieldsets = (
+        ('Patient', {
+            'fields': ('patient', 'id')
+        }),
+        ('Token & QR Code', {
+            'fields': ('encrypted_token', 'qr_code_image', 'qr_code_url')
+        }),
+        ('Status', {
+            'fields': ('status', 'is_active', 'expires_at')
+        }),
+        ('Scan History', {
+            'fields': ('last_scanned_at', 'last_scanned_by')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'regenerated_at')
+        }),
+    )
+
+
+@admin.register(QRCodeScanLog)
+class QRCodeScanLogAdmin(admin.ModelAdmin):
+    list_display = ('qr_code', 'patient', 'scanned_by', 'scan_timestamp', 'access_granted', 'ip_address')
+    search_fields = ('patient__username', 'patient__email', 'scanned_by__username', 'ip_address')
+    list_filter = ('access_granted', 'scan_timestamp')
+    readonly_fields = ('id', 'scan_timestamp')
+    
+    fieldsets = (
+        ('QR Code & Patient', {
+            'fields': ('qr_code', 'patient')
+        }),
+        ('Doctor Scan', {
+            'fields': ('scanned_by',)
+        }),
+        ('Scan Details', {
+            'fields': ('scan_timestamp', 'ip_address', 'user_agent')
+        }),
+        ('Access Control', {
+            'fields': ('access_granted', 'denial_reason')
+        }),
+    )

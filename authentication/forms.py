@@ -51,21 +51,16 @@ class DoctorProfileForm(forms.ModelForm):
 class MedicalRecordForm(forms.ModelForm):
     class Meta:
         model = MedicalRecord
-        fields = ['record_type', 'title', 'description', 'file', 'report_date']
+        fields = ['title', 'document_type', 'document_file', 'report_date']
         widgets = {
-            'record_type': forms.Select(attrs={
-                'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-ring focus:border-input text-foreground transition-colors'
-            }),
             'title': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-ring focus:border-input text-foreground transition-colors',
                 'placeholder': 'e.g., Blood Test Results - Dec 2025'
             }),
-            'description': forms.Textarea(attrs={
-                'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-ring focus:border-input text-foreground transition-colors',
-                'rows': 3,
-                'placeholder': 'Optional: Add any notes about this report'
+            'document_type': forms.Select(attrs={
+                'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-ring focus:border-input text-foreground transition-colors'
             }),
-            'file': forms.FileInput(attrs={
+            'document_file': forms.FileInput(attrs={
                 'class': 'sr-only',
                 'accept': '.pdf,.jpg,.jpeg,.png'
             }),
@@ -75,8 +70,8 @@ class MedicalRecordForm(forms.ModelForm):
             }),
         }
     
-    def clean_file(self):
-        file = self.cleaned_data.get('file')
+    def clean_document_file(self):
+        file = self.cleaned_data.get('document_file')
         if file:
             # Check file size (max 10MB)
             if file.size > 10 * 1024 * 1024:

@@ -1,6 +1,9 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
+import secrets
+from django.utils import timezone
+from datetime import timedelta
 
 class User(AbstractUser):
     USER_TYPE_CHOICES = [
@@ -40,6 +43,92 @@ class PatientProfile(models.Model):
     
     class Meta:
         db_table = 'patient_profiles'
+
+
+class PatientQRCode(models.Model):
+    """
+    Secure QR Code system for patient access
+    """
+    QR_STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('expired', 'Expired'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    patient = models.OneToOneField(User, on_delete=models.CASCADE, related_name='qr_code')
+    
+    # Encrypted token - non-guessable, unique per patient
+    encrypted_token = models.CharField(max_length=255, unique=True, db_index=True)
+    
+    # QR Code image
+    qr_code_image = models.ImageField(upload_to='patient_qr_codes/', null=True, blank=True)
+    qr_code_url = models.URLField(max_length=500, null=True, blank=True)
+    
+    # Status and security
+    status = models.CharField(max_length=20, choices=QR_STATUS_CHOICES, default='active')
+    is_active = models.BooleanField(default=True)
+    
+    # Expiration
+    expires_at = models.DateTimeField(null=True, blank=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    regenerated_at = models.DateTimeField(null=True, blank=True)
+    last_scanned_at = models.DateTimeField(null=True, blank=True)
+    last_scanned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
+                                         related_name='scanned_patient_qr_codes')
+    
+    class Meta:
+        db_table = 'patient_qr_codes'
+        verbose_name = 'Patient QR Code'
+        verbose_name_plural = 'Patient QR Codes'
+    
+    def __str__(self):
+        return f"QR Code for {self.patient.username}"
+    
+    def is_expired(self):
+        """Check if QR code is expired"""
+        if self.expires_at:
+            return timezone.now() > self.expires_at
+        return False
+    
+    def get_status(self):
+        """Get current status of QR code"""
+        if not self.is_active:
+            return 'inactive'
+        if self.is_expired():
+            return 'expired'
+        return 'active'
+
+
+class QRCodeScanLog(models.Model):
+    """
+    Audit log for every QR code scan
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    qr_code = models.ForeignKey(PatientQRCode, on_delete=models.CASCADE, related_name='scan_logs')
+    patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='qr_scan_logs_as_patient')
+    scanned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, 
+                                    related_name='qr_scans_performed', limit_choices_to={'user_type': 'doctor'})
+    
+    # Scan details
+    scan_timestamp = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    
+    # Result
+    access_granted = models.BooleanField(default=True)
+    denial_reason = models.CharField(max_length=255, blank=True, null=True)
+    
+    class Meta:
+        db_table = 'qr_code_scan_logs'
+        ordering = ['-scan_timestamp']
+        verbose_name = 'QR Code Scan Log'
+        verbose_name_plural = 'QR Code Scan Logs'
+    
+    def __str__(self):
+        return f"Scan by Dr. {self.scanned_by.username if self.scanned_by else 'Unknown'} - {self.scan_timestamp}"
 
 
 class DoctorProfile(models.Model):
@@ -149,89 +238,71 @@ class DoctorKYC(models.Model):
         ('incomplete', 'Incomplete'),
     ]
     
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     doctor = models.OneToOneField(DoctorProfile, on_delete=models.CASCADE, related_name='kyc')
     
-    # Personal Information
+    # Basic Information
     full_name = models.CharField(max_length=200)
     date_of_birth = models.DateField()
     gender = models.CharField(max_length=20, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')])
-    nationality = models.CharField(max_length=100)
-    
-    # Contact Information
-    personal_email = models.EmailField()
-    mobile_number = models.CharField(max_length=20)
-    residential_address = models.TextField()
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    postal_code = models.CharField(max_length=20)
-    country = models.CharField(max_length=100)
-    
-    # Medical License Information
-    license_number_verified = models.CharField(max_length=100)
-    license_issuing_authority = models.CharField(max_length=200)
-    license_issue_date = models.DateField()
-    license_expiry_date = models.DateField()
-    license_document = models.FileField(upload_to='kyc/licenses/', null=True, blank=True)
-    
-    # Educational Qualification
-    medical_degree = models.CharField(max_length=200)
-    medical_university = models.CharField(max_length=200)
-    graduation_year = models.IntegerField()
-    degree_certificate = models.FileField(upload_to='kyc/degrees/', null=True, blank=True)
-    
-    # Professional Information
-    current_hospital = models.CharField(max_length=200, null=True, blank=True)
-    designation = models.CharField(max_length=100)
-    department_specialty = models.CharField(max_length=100)
-    years_of_practice = models.IntegerField()
-    employment_document = models.FileField(upload_to='kyc/employment/', null=True, blank=True)
     
     # Identification Documents
-    identity_document_type = models.CharField(max_length=50, choices=[('passport', 'Passport'), ('aadhaar', 'Aadhaar'), ('national_id', 'National ID'), ('driving_license', 'Driving License')])
-    identity_document_number = models.CharField(max_length=100)
-    identity_document_file = models.FileField(upload_to='kyc/identity/', null=True, blank=True)
+    id_type = models.CharField(max_length=50, choices=[('aadhar', 'Aadhar'), ('pan', 'PAN'), ('passport', 'Passport')])
+    id_number = models.CharField(max_length=100, blank=True, null=True)
+    id_document = models.FileField(upload_to='doctor_kyc/id_documents/')
     
-    # Address Verification
-    address_proof_type = models.CharField(max_length=50, choices=[('utility_bill', 'Utility Bill'), ('rental_agreement', 'Rental Agreement'), ('property_deed', 'Property Deed'), ('bank_statement', 'Bank Statement')])
-    address_proof_file = models.FileField(upload_to='kyc/address_proof/', null=True, blank=True)
+    # Medical Registration
+    registration_number = models.CharField(max_length=100)
+    registration_council = models.CharField(max_length=200)
+    registration_document = models.FileField(upload_to='doctor_kyc/registration_documents/')
     
-    # KYC Status
-    status = models.CharField(max_length=20, choices=KYC_STATUS_CHOICES, default='incomplete')
-    rejection_reason = models.TextField(null=True, blank=True)
-    admin_notes = models.TextField(null=True, blank=True)
+    # Degree/Qualification
+    degree_document = models.FileField(upload_to='doctor_kyc/degree_documents/')
+    
+    # Address Proof
+    address_proof_type = models.CharField(max_length=50, choices=[('electricity_bill', 'Electricity Bill'), 
+                                                                    ('gas_bill', 'Gas Bill'), 
+                                                                    ('water_bill', 'Water Bill')])
+    address_proof_document = models.FileField(upload_to='doctor_kyc/address_proofs/')
+    
+    # Bank Details (for future payments)
+    bank_account_holder = models.CharField(max_length=200, null=True, blank=True)
+    bank_account_number = models.CharField(max_length=20, null=True, blank=True)
+    bank_ifsc_code = models.CharField(max_length=20, null=True, blank=True)
+    
+    # Status and verification
+    status = models.CharField(max_length=20, choices=KYC_STATUS_CHOICES, default='pending')
+    verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='verified_doctors')
+    verification_notes = models.TextField(blank=True, null=True)
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    submitted_at = models.DateTimeField(null=True, blank=True)
     verified_at = models.DateTimeField(null=True, blank=True)
-    verified_by = models.CharField(max_length=200, null=True, blank=True)
     
     def __str__(self):
-        return f"KYC - Dr. {self.doctor.user.username} ({self.status})"
+        return f"KYC - Dr. {self.doctor.user.username}"
     
     class Meta:
         db_table = 'doctor_kyc'
         verbose_name = 'Doctor KYC'
-        verbose_name_plural = 'Doctor KYCs'
+        verbose_name_plural = 'Doctor KYC'
 
 
 class MedicalRecord(models.Model):
-    """Model for storing patient medical records with OCR capabilities"""
-    RECORD_TYPE_CHOICES = [
-        ('lab_report', 'Laboratory Report'),
-        ('radiology', 'Radiology Report'),
-        ('pathology', 'Pathology Report'),
-        ('biopsy', 'Biopsy Report'),
-        ('blood_test', 'Blood Test'),
-        ('genetic_test', 'Genetic Test'),
+    DOCUMENT_TYPE_CHOICES = [
         ('prescription', 'Prescription'),
+        ('lab_report', 'Lab Report'),
+        ('imaging_report', 'Imaging Report'),
         ('discharge_summary', 'Discharge Summary'),
-        ('consultation', 'Consultation Notes'),
+        ('medical_history', 'Medical History'),
+        ('vaccination_record', 'Vaccination Record'),
         ('other', 'Other'),
     ]
     
     OCR_STATUS_CHOICES = [
+        ('pending', 'Pending OCR'),
         ('processing', 'Processing'),
         ('completed', 'Completed'),
         ('failed', 'Failed'),
@@ -240,12 +311,10 @@ class MedicalRecord(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='medical_records')
     
-    # Record Information
-    title = models.CharField(max_length=200)
-    description = models.TextField(blank=True, null=True)
-    record_type = models.CharField(max_length=20, choices=RECORD_TYPE_CHOICES, default='other')
-    file = models.FileField(upload_to='medical_records/%Y/%m/%d/')
-    file_size = models.IntegerField(null=True, blank=True)
+    # Document Information
+    title = models.CharField(max_length=255)
+    document_type = models.CharField(max_length=50, choices=DOCUMENT_TYPE_CHOICES)
+    document_file = models.FileField(upload_to='medical_records/%Y/%m/%d/')
     
     # OCR Related Fields
     extracted_text = models.TextField(blank=True, null=True)

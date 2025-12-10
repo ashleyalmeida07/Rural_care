@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import qr_views
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -21,4 +22,14 @@ urlpatterns = [
     path('patient/medical-records/upload/', views.upload_medical_record, name='upload_medical_record'),
     path('patient/medical-records/<uuid:record_id>/', views.medical_record_detail, name='medical_record_detail'),
     path('patient/medical-records/<uuid:record_id>/delete/', views.delete_medical_record, name='delete_medical_record'),
+    
+    # QR Code Routes
+    path('patient/qr-code/', qr_views.patient_qr_dashboard, name='patient_qr_dashboard'),
+    path('patient/qr-code/regenerate/', qr_views.regenerate_qr_code, name='regenerate_qr_code'),
+    path('patient/qr-code/disable/', qr_views.disable_qr_code, name='disable_qr_code'),
+    path('patient/qr-code/enable/', qr_views.enable_qr_code, name='enable_qr_code'),
+    path('patient/qr-code/analytics/<uuid:patient_id>/', qr_views.qr_scan_analytics, name='qr_scan_analytics'),
+    path('doctor/qr-scanner/', qr_views.doctor_qr_scanner, name='doctor_qr_scanner'),
+    path('doctor/qr-scanner/scan/', qr_views.scan_qr_code, name='scan_qr_code'),
+    path('doctor/patient/<uuid:patient_id>/profile/', qr_views.scanned_patient_profile, name='scanned_patient_profile'),
 ]
