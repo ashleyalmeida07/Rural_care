@@ -24,6 +24,29 @@
                         QR Scanner
                     </a>
 
+                    <!-- Treatment Planning Dropdown -->
+                    <div class="relative">
+                        <button onclick="toggleTreatmentDropdown()" class="text-sm font-medium text-muted-foreground hover:text-foreground focus:outline-none flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg hover:bg-accent/50">
+                            <i class="fas fa-brain mr-2"></i>
+                            <span>Treatment Planning</span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" id="treatmentChevron"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="treatmentDropdown" class="dropdown-menu absolute bg-card border border-border/50 rounded-xl shadow-xl py-2 w-56 mt-2 z-50 backdrop-blur-sm">
+                            <a href="{% url 'cancer_detection:create_comprehensive_plan' %}"
+                               class="block px-4 py-3 text-sm text-foreground hover:bg-accent/80 transition-all duration-200 flex items-center space-x-2 hover:translate-x-1">
+                                <i class="fas fa-project-diagram text-primary"></i>
+                                <span>Comprehensive Plan</span>
+                            </a>
+                            <a href="{% url 'cancer_detection:treatment_plans_list' %}"
+                               class="block px-4 py-3 text-sm text-foreground hover:bg-accent/80 transition-all duration-200 flex items-center space-x-2 hover:translate-x-1">
+                                <i class="fas fa-list text-primary"></i>
+                                <span>All Treatment Plans</span>
+                            </a>
+                        </div>
+                    </div>
+
                     <!-- Detection Dropdown -->
                     <div class="relative">
                         <button onclick="toggleDetectionDropdown()" class="text-sm font-medium text-muted-foreground hover:text-foreground focus:outline-none flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg hover:bg-accent/50">
@@ -43,6 +66,39 @@
                                class="block px-4 py-3 text-sm text-foreground hover:bg-accent/80 transition-all duration-200 flex items-center space-x-2 hover:translate-x-1">
                                 <i class="fas fa-chart-bar text-primary"></i>
                                 <span>View Analyses</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Data Analysis Dropdown -->
+                    <div class="relative">
+                        <button onclick="toggleDataAnalysisDropdown()" class="text-sm font-medium text-muted-foreground hover:text-foreground focus:outline-none flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg hover:bg-accent/50">
+                            <i class="fas fa-database mr-2"></i>
+                            <span>Data Analysis</span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" id="dataAnalysisChevron"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="dataAnalysisDropdown" class="dropdown-menu absolute bg-card border border-border/50 rounded-xl shadow-xl py-2 w-56 mt-2 z-50 backdrop-blur-sm">
+                            <a href="{% url 'cancer_detection:upload_histopathology' %}"
+                               class="block px-4 py-3 text-sm text-foreground hover:bg-accent/80 transition-all duration-200 flex items-center space-x-2 hover:translate-x-1">
+                                <i class="fas fa-microscope text-primary"></i>
+                                <span>Histopathology</span>
+                            </a>
+                            <a href="{% url 'cancer_detection:histopathology_list' %}"
+                               class="block px-4 py-3 text-sm text-foreground hover:bg-accent/80 transition-all duration-200 flex items-center space-x-2 hover:translate-x-1">
+                                <i class="fas fa-file-medical text-primary"></i>
+                                <span>Pathology Reports</span>
+                            </a>
+                            <a href="{% url 'cancer_detection:upload_genomic' %}"
+                               class="block px-4 py-3 text-sm text-foreground hover:bg-accent/80 transition-all duration-200 flex items-center space-x-2 hover:translate-x-1">
+                                <i class="fas fa-dna text-primary"></i>
+                                <span>Genomic Profile</span>
+                            </a>
+                            <a href="{% url 'cancer_detection:genomic_list' %}"
+                               class="block px-4 py-3 text-sm text-foreground hover:bg-accent/80 transition-all duration-200 flex items-center space-x-2 hover:translate-x-1">
+                                <i class="fas fa-flask text-primary"></i>
+                                <span>Genomic Profiles</span>
                             </a>
                         </div>
                     </div>

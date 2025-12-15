@@ -57,20 +57,90 @@
         </div>
     </div>
 
-    <!-- Action Buttons -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-        <a href="{% url 'cancer_detection:upload_image' %}" class="bg-gradient-to-r from-primary to-primary/90 hover:shadow-xl text-primary-foreground px-6 py-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center hover:scale-105 group">
-            <i class="fas fa-cloud-upload-alt text-xl mr-2 group-hover:scale-110 transition-transform"></i>
-            Upload New Image
-        </a>
-        <a href="{% url 'cancer_detection:analysis_list' %}" class="bg-card border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground px-6 py-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center hover:scale-105 group">
-            <i class="fas fa-list text-xl mr-2 group-hover:scale-110 transition-transform"></i>
-            View All Analyses
-        </a>
-        <a href="{% url 'cancer_detection:treatment_plans_list' %}" class="bg-card border-2 border-green-500 text-green-600 hover:bg-green-500 hover:text-white px-6 py-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center hover:scale-105 group">
-            <i class="fas fa-flask text-xl mr-2 group-hover:scale-110 transition-transform"></i>
-            Treatment Plans
-        </a>
+    <!-- Quick Actions -->
+    <div class="mb-10">
+        <h2 class="text-2xl font-bold text-foreground mb-6 flex items-center">
+            <i class="fas fa-bolt mr-3 text-primary"></i>
+            Quick Actions
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="{% url 'cancer_detection:upload_image' %}" class="bg-gradient-to-r from-primary to-primary/90 hover:shadow-xl text-primary-foreground px-6 py-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center hover:scale-105 group">
+                <i class="fas fa-cloud-upload-alt text-xl mr-2 group-hover:scale-110 transition-transform"></i>
+                Upload Image
+            </a>
+            <a href="{% url 'cancer_detection:create_comprehensive_plan' %}" class="bg-gradient-to-r from-green-500 to-green-600 hover:shadow-xl text-white px-6 py-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center hover:scale-105 group">
+                <i class="fas fa-project-diagram text-xl mr-2 group-hover:scale-110 transition-transform"></i>
+                Create Plan
+            </a>
+            <a href="{% url 'cancer_detection:upload_histopathology' %}" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:shadow-xl text-white px-6 py-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center hover:scale-105 group">
+                <i class="fas fa-microscope text-xl mr-2 group-hover:scale-110 transition-transform"></i>
+                Upload Pathology
+            </a>
+            <a href="{% url 'cancer_detection:upload_genomic' %}" class="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:shadow-xl text-white px-6 py-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center hover:scale-105 group">
+                <i class="fas fa-dna text-xl mr-2 group-hover:scale-110 transition-transform"></i>
+                Upload Genomics
+            </a>
+        </div>
+    </div>
+
+    <!-- Feature Sections -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <!-- Image Analysis -->
+        <div class="bg-card border border-border/50 rounded-2xl p-6 hover:shadow-lg transition-all">
+            <h3 class="text-xl font-bold text-foreground mb-4 flex items-center">
+                <i class="fas fa-images text-primary mr-2"></i>
+                Image Analysis
+            </h3>
+            <p class="text-sm text-muted-foreground mb-4">Upload and analyze medical images for cancer detection</p>
+            <div class="space-y-2">
+                <a href="{% url 'cancer_detection:upload_image' %}" class="block text-sm text-primary hover:text-primary/80 font-semibold">
+                    <i class="fas fa-arrow-right mr-2"></i>Upload Image
+                </a>
+                <a href="{% url 'cancer_detection:analysis_list' %}" class="block text-sm text-primary hover:text-primary/80 font-semibold">
+                    <i class="fas fa-arrow-right mr-2"></i>View All Analyses
+                </a>
+            </div>
+        </div>
+
+        <!-- Treatment Planning -->
+        <div class="bg-card border border-border/50 rounded-2xl p-6 hover:shadow-lg transition-all">
+            <h3 class="text-xl font-bold text-foreground mb-4 flex items-center">
+                <i class="fas fa-brain text-green-600 mr-2"></i>
+                Treatment Planning
+            </h3>
+            <p class="text-sm text-muted-foreground mb-4">AI-powered personalized treatment plans</p>
+            <div class="space-y-2">
+                <a href="{% url 'cancer_detection:create_comprehensive_plan' %}" class="block text-sm text-green-600 hover:text-green-700 font-semibold">
+                    <i class="fas fa-arrow-right mr-2"></i>Create Comprehensive Plan
+                </a>
+                <a href="{% url 'cancer_detection:treatment_plans_list' %}" class="block text-sm text-green-600 hover:text-green-700 font-semibold">
+                    <i class="fas fa-arrow-right mr-2"></i>View Treatment Plans
+                </a>
+            </div>
+        </div>
+
+        <!-- Data Analysis -->
+        <div class="bg-card border border-border/50 rounded-2xl p-6 hover:shadow-lg transition-all">
+            <h3 class="text-xl font-bold text-foreground mb-4 flex items-center">
+                <i class="fas fa-database text-purple-600 mr-2"></i>
+                Data Analysis
+            </h3>
+            <p class="text-sm text-muted-foreground mb-4">Pathology reports and genomic profiles</p>
+            <div class="space-y-2">
+                <a href="{% url 'cancer_detection:upload_histopathology' %}" class="block text-sm text-purple-600 hover:text-purple-700 font-semibold">
+                    <i class="fas fa-arrow-right mr-2"></i>Upload Pathology
+                </a>
+                <a href="{% url 'cancer_detection:histopathology_list' %}" class="block text-sm text-purple-600 hover:text-purple-700 font-semibold">
+                    <i class="fas fa-arrow-right mr-2"></i>View Reports
+                </a>
+                <a href="{% url 'cancer_detection:upload_genomic' %}" class="block text-sm text-indigo-600 hover:text-indigo-700 font-semibold">
+                    <i class="fas fa-arrow-right mr-2"></i>Upload Genomics
+                </a>
+                <a href="{% url 'cancer_detection:genomic_list' %}" class="block text-sm text-indigo-600 hover:text-indigo-700 font-semibold">
+                    <i class="fas fa-arrow-right mr-2"></i>View Profiles
+                </a>
+            </div>
+        </div>
     </div>
 
     <!-- Recent Analyses -->

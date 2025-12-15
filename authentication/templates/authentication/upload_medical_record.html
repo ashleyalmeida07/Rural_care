@@ -26,12 +26,12 @@
             <div class="space-y-6">
                 <!-- Record Type -->
                 <div>
-                    <label for="{{ form.record_type.id_for_label }}" class="block text-sm font-medium text-foreground mb-2">
+                    <label for="{{ form.document_type.id_for_label }}" class="block text-sm font-medium text-foreground mb-2">
                         <i class="fas fa-file-medical mr-2 text-primary"></i>Record Type <span class="text-red-600 dark:text-red-400">*</span>
                     </label>
-                    {{ form.record_type }}
-                    {% if form.record_type.errors %}
-                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.record_type.errors.0 }}</p>
+                    {{ form.document_type }}
+                    {% if form.document_type.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.document_type.errors.0 }}</p>
                     {% endif %}
                 </div>
 
@@ -59,16 +59,7 @@
                     <p class="mt-1 text-xs text-muted-foreground">The date when this report was created</p>
                 </div>
 
-                <!-- Description -->
-                <div>
-                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-foreground mb-2">
-                        <i class="fas fa-align-left mr-2 text-primary"></i>Description
-                    </label>
-                    {{ form.description }}
-                    {% if form.description.errors %}
-                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.description.errors.0 }}</p>
-                    {% endif %}
-                </div>
+
 
                 <!-- File Upload -->
                 <div>
@@ -81,9 +72,9 @@
                             <i class="fas fa-cloud-upload-alt text-4xl sm:text-5xl text-muted-foreground mx-auto block mb-3" id="uploadIcon"></i>
                             <div id="uploadText">
                                 <div class="flex flex-col sm:flex-row text-sm text-muted-foreground justify-center items-center">
-                                    <label for="{{ form.file.id_for_label }}" class="relative cursor-pointer bg-card rounded-md font-medium text-primary hover:text-primary/80 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-ring px-2">
+                                    <label for="{{ form.document_file.id_for_label }}" class="relative cursor-pointer bg-card rounded-md font-medium text-primary hover:text-primary/80 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-ring px-2">
                                         <span>Upload a file</span>
-                                        {{ form.file }}
+                                        {{ form.document_file }}
                                     </label>
                                     <p class="sm:pl-1">or drag and drop</p>
                                 </div>
@@ -101,8 +92,8 @@
                             </div>
                         </div>
                     </div>
-                    {% if form.file.errors %}
-                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.file.errors.0 }}</p>
+                    {% if form.document_file.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.document_file.errors.0 }}</p>
                     {% endif %}
                 </div>
 
@@ -137,7 +128,7 @@
 
 <script>
 // File upload handling
-const fileInput = document.getElementById('{{ form.file.id_for_label }}');
+const fileInput = document.getElementById('{{ form.document_file.id_for_label }}');
 const dropZone = document.getElementById('dropZone');
 const uploadText = document.getElementById('uploadText');
 const fileInfo = document.getElementById('fileInfo');

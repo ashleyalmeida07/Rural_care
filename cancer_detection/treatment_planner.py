@@ -9,6 +9,15 @@ from typing import Dict, List, Tuple
 from datetime import datetime
 import statistics
 
+# Import new analyzers
+try:
+    from .histopathology_analyzer import HistopathologyAnalyzer
+    from .genomics_analyzer import GenomicsAnalyzer
+    from .outcome_predictor import OutcomePredictor
+    ANALYZERS_AVAILABLE = True
+except ImportError:
+    ANALYZERS_AVAILABLE = False
+
 
 class TreatmentPlanningEngine:
     """
@@ -157,6 +166,16 @@ class TreatmentPlanningEngine:
         self.recommendations = []
         self.contraindications = []
         self.risk_factors = []
+        
+        # Initialize analyzers
+        if ANALYZERS_AVAILABLE:
+            self.histopathology_analyzer = HistopathologyAnalyzer()
+            self.genomics_analyzer = GenomicsAnalyzer()
+            self.outcome_predictor = OutcomePredictor()
+        else:
+            self.histopathology_analyzer = None
+            self.genomics_analyzer = None
+            self.outcome_predictor = None
     
     def analyze_patient_profile(self, patient_data: Dict) -> Dict:
         """
@@ -205,6 +224,7 @@ class TreatmentPlanningEngine:
     def analyze_genetic_profile(self, genetic_data: Dict) -> Dict:
         """
         Analyze genetic mutations, biomarkers, and immunoprofile.
+        Uses enhanced genomics analyzer if available.
         
         Args:
             genetic_data: Dictionary with genetic test results
@@ -212,6 +232,11 @@ class TreatmentPlanningEngine:
         Returns:
             Dictionary with genetic analysis and implications
         """
+        # Use enhanced genomics analyzer if available
+        if self.genomics_analyzer:
+            return self.genomics_analyzer.analyze_genomic_profile(genetic_data)
+        
+        # Fallback to original analysis
         analysis = {
             'mutations': genetic_data.get('mutations', {}),
             'biomarkers': genetic_data.get('biomarkers', {}),
@@ -252,13 +277,43 @@ class TreatmentPlanningEngine:
         # Generate side effect profile
         side_effects = self._generate_side_effect_profile(customized_plan)
         
-        # Calculate outcome predictions
-        outcomes = self._predict_outcomes(
-            patient_profile,
-            tumor_analysis,
-            genetic_profile,
-            customized_plan
-        )
+        # Calculate outcome predictions using ML predictor if available
+        if self.outcome_predictor:
+            outcomes = self.outcome_predictor.predict_survival(
+                patient_profile,
+                tumor_analysis,
+                customized_plan,
+                genetic_profile
+            )
+            treatment_response = self.outcome_predictor.predict_treatment_response(
+                patient_profile,
+                tumor_analysis,
+                customized_plan,
+                genetic_profile
+            )
+            qol_prediction = self.outcome_predictor.predict_quality_of_life(
+                patient_profile,
+                customized_plan
+            )
+            side_effect_prediction = self.outcome_predictor.predict_side_effects(
+                patient_profile,
+                customized_plan
+            )
+            
+            outcomes = {
+                'survival': outcomes,
+                'treatment_response': treatment_response,
+                'quality_of_life': qol_prediction,
+                'side_effects': side_effect_prediction,
+            }
+        else:
+            # Fallback to original prediction
+            outcomes = self._predict_outcomes(
+                patient_profile,
+                tumor_analysis,
+                genetic_profile,
+                customized_plan
+            )
         
         treatment_plan = {
             'plan_date': datetime.now().isoformat(),

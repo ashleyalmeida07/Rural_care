@@ -445,11 +445,6 @@ def upload_medical_record(request):
         if form.is_valid():
             record = form.save(commit=False)
             record.patient = request.user
-            
-            # Store file size
-            if record.file:
-                record.file_size = record.file.size
-            
             record.save()
             
             # Start OCR processing in background
@@ -495,10 +490,10 @@ def delete_medical_record(request, record_id):
         record = MedicalRecord.objects.get(id=record_id, patient=request.user)
         
         # Delete the file from storage
-        if record.file:
+        if record.document_file:
             try:
-                if os.path.exists(record.file.path):
-                    os.remove(record.file.path)
+                if os.path.exists(record.document_file.path):
+                    os.remove(record.document_file.path)
             except Exception as e:
                 print(f"Error deleting file: {e}")
         
@@ -517,7 +512,7 @@ def process_ocr(record_id):
     """Process OCR on uploaded medical record"""
     try:
         record = MedicalRecord.objects.get(id=record_id)
-        file_path = record.file.path
+        file_path = record.document_file.path
         file_ext = os.path.splitext(file_path)[1].lower()
         
         extracted_text = ""
