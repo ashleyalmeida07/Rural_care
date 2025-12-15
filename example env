@@ -1,0 +1,17 @@
+# Supabase Configuration
+SUPABASE_URL="https://wotccnylbziwbmiuvhff.supabase.co"
+SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvdGNjbnlsYnppd2JtaXV2aGZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4MzQ2MTAsImV4cCI6MjA4MDQxMDYxMH0.pDUcCmdYQa7-8ZjOQrAHQn_ocAcsLDVrqw9f5IsDpaU"
+SUPABASE_SERVICE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvdGNjbnlsYnppd2JtaXV2aGZmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDgzNDYxMCwiZXhwIjoyMDgwNDEwNjEwfQ.eCw5ZsY3osSQqWmDP-qJBhsRZMM6dXEiM1gkmOmCDmQ"
+
+# Database Configuration (Supabase PostgreSQL)
+DB_NAME="postgres"
+DB_USER="postgres.wotccnylbziwbmiuvhff"
+DB_PASSWORD="Jacell@100"
+DB_HOST="aws-1-ap-northeast-2.pooler.supabase.com"
+DB_PORT="6543"
+
+# Groq API Configuration
+GROQ_API_KEY="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"
+
+# Site URL
+SITE_URL="http://localhost:8000"
