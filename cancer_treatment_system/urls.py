@@ -18,11 +18,17 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from cancer_detection import evidence_web_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('authentication.urls')),
     path('cancer-detection/', include('cancer_detection.urls')),
+    
+    # Evidence Traceability Engine - Root level HTML views
+    path('evidence/search/', evidence_web_views.evidence_search, name='evidence_search'),
+    path('evidence/source/<uuid:source_id>/', evidence_web_views.evidence_source_detail, name='evidence_source_detail'),
+    path('evidence/rules/', evidence_web_views.rule_based_references_view, name='rule_based_references_view'),
 ]
 
 # Serve media files in development
