@@ -289,6 +289,24 @@
             }
         }
 
+        function toggleClinicalDropdown() {
+            const dropdown = document.getElementById('clinicalDropdown');
+            const chevron = document.getElementById('clinicalChevron');
+            if (dropdown && chevron) {
+                dropdown.classList.toggle('show');
+                chevron.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
+        }
+
+        function togglePortalDropdown() {
+            const dropdown = document.getElementById('portalDropdown');
+            const chevron = document.getElementById('portalChevron');
+            if (dropdown && chevron) {
+                dropdown.classList.toggle('show');
+                chevron.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
+        }
+
         // Close dropdown when clicking outside
         window.addEventListener('click', function(e) {
             const doctorDropdown = document.getElementById('doctorDropdown');
@@ -296,12 +314,16 @@
             const detectionDropdown = document.getElementById('detectionDropdown');
             const treatmentDropdown = document.getElementById('treatmentDropdown');
             const dataAnalysisDropdown = document.getElementById('dataAnalysisDropdown');
+            const clinicalDropdown = document.getElementById('clinicalDropdown');
+            const portalDropdown = document.getElementById('portalDropdown');
             
             const doctorButton = e.target.closest('button[onclick="toggleDropdown()"]');
             const patientButton = e.target.closest('button[onclick="togglePatientDropdown()"]');
             const detectionButton = e.target.closest('button[onclick="toggleDetectionDropdown()"]');
             const treatmentButton = e.target.closest('button[onclick="toggleTreatmentDropdown()"]');
             const dataAnalysisButton = e.target.closest('button[onclick="toggleDataAnalysisDropdown()"]');
+            const clinicalButton = e.target.closest('button[onclick="toggleClinicalDropdown()"]');
+            const portalButton = e.target.closest('button[onclick="togglePortalDropdown()"]');
             const themeButton = e.target.closest('button[onclick="toggleTheme()"]');
             
             if (!doctorButton && doctorDropdown && !doctorDropdown.contains(e.target)) {
@@ -331,6 +353,18 @@
             if (!dataAnalysisButton && dataAnalysisDropdown && !dataAnalysisDropdown.contains(e.target)) {
                 dataAnalysisDropdown.classList.remove('show');
                 const chevron = document.getElementById('dataAnalysisChevron');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+
+            if (!clinicalButton && clinicalDropdown && !clinicalDropdown.contains(e.target)) {
+                clinicalDropdown.classList.remove('show');
+                const chevron = document.getElementById('clinicalChevron');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+
+            if (!portalButton && portalDropdown && !portalDropdown.contains(e.target)) {
+                portalDropdown.classList.remove('show');
+                const chevron = document.getElementById('portalChevron');
                 if (chevron) chevron.style.transform = 'rotate(0deg)';
             }
         });

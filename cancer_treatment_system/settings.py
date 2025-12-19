@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'authentication',
     'cancer_detection',
+    'clinical_decision_support',
+    'patient_portal',
 ]
 
 MIDDLEWARE = [
