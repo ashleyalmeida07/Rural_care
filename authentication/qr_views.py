@@ -21,6 +21,7 @@ from .qr_utils import (
     enable_patient_qr_code,
     generate_qr_code
 )
+from blockchain.status_updater import update_single_transaction
 import json
 import os
 
@@ -102,23 +103,21 @@ def regenerate_qr_code(request):
     Regenerate patient's QR code (invalidates old code)
     """
     if request.user.user_type != 'patient':
-        return JsonResponse({'error': 'Unauthorized'}, status=403)
+        messages.error(request, 'Unauthorized access.')
+        return redirect('patient_login')
     
     try:
         new_qr_code = regenerate_patient_qr_code(request.user)
         
         if new_qr_code:
-            messages.success(request, 'QR code regenerated successfully. Old code is now invalid.')
-            return JsonResponse({
-                'success': True,
-                'message': 'QR code regenerated',
-                'qr_code_id': str(new_qr_code.id)
-            })
+            messages.success(request, 'QR code regenerated successfully! Old code is now invalid.')
         else:
-            return JsonResponse({'error': 'Failed to regenerate QR code'}, status=400)
+            messages.error(request, 'Failed to regenerate QR code. Please try again.')
     
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400)
+        messages.error(request, f'Error regenerating QR code: {str(e)}')
+    
+    return redirect('patient_qr_dashboard')
 
 
 @login_required
@@ -451,3 +450,43 @@ def get_patient_medical_profile(patient):
     except Exception as e:
         print(f"Error retrieving patient profile: {str(e)}")
         return {}
+
+
+@require_POST
+@login_required
+def refresh_blockchain_status(request):
+    """
+    Refresh blockchain transaction status for a specific scan
+    """
+    try:
+        data = json.loads(request.body)
+        tx_hash = data.get('tx_hash')
+        
+        if not tx_hash:
+            return JsonResponse({'success': False, 'error': 'Transaction hash required'}, status=400)
+        
+        # Update the transaction status
+        result = update_single_transaction(tx_hash)
+        
+        if result['success']:
+            # Get updated scan data
+            scan = QRCodeScanLog.objects.filter(
+                blockchain_tx_hash__in=[tx_hash, tx_hash.lstrip('0x')]
+            ).first()
+            
+            if scan:
+                return JsonResponse({
+                    'success': True,
+                    'confirmed': result.get('confirmed', False),
+                    'pending': result.get('pending', False),
+                    'already_confirmed': result.get('already_confirmed', False),
+                    'block_number': scan.blockchain_block_number,
+                    'log_id': scan.blockchain_log_id,
+                    'message': result.get('message', 'Status updated')
+                })
+        
+        return JsonResponse(result)
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+

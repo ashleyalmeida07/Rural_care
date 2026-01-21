@@ -5,11 +5,14 @@ QR Code generation and validation utilities for Patient QR Access System
 import qrcode
 import secrets
 import hashlib
+import logging
 from io import BytesIO
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from datetime import timedelta
 from .models import PatientQRCode, QRCodeScanLog
+
+logger = logging.getLogger(__name__)
 
 
 def generate_encrypted_token():
@@ -143,7 +146,7 @@ def validate_qr_token(token):
 
 def log_qr_scan(qr_code, doctor, ip_address=None, user_agent=None, access_granted=True, denial_reason=None):
     """
-    Log QR code scan event for audit trail
+    Log QR code scan event for audit trail and blockchain
     
     Args:
         qr_code: PatientQRCode object
@@ -171,6 +174,54 @@ def log_qr_scan(qr_code, doctor, ip_address=None, user_agent=None, access_grante
         qr_code.last_scanned_at = timezone.now()
         qr_code.last_scanned_by = doctor
         qr_code.save()
+        
+        # Log to blockchain asynchronously (non-blocking)
+        try:
+            from django.conf import settings
+            if getattr(settings, 'BLOCKCHAIN_ENABLED', False):
+                from blockchain.blockchain_service import get_blockchain_service
+                
+                blockchain_service = get_blockchain_service()
+                if blockchain_service.is_connected():
+                    # Prepare metadata
+                    metadata = {
+                        'scan_type': 'qr_code',
+                        'access_granted': access_granted,
+                        'timestamp': str(timezone.now())
+                    }
+                    
+                    # Log to blockchain
+                    result = blockchain_service.log_qr_scan(
+                        doctor_id=doctor.id,
+                        patient_id=qr_code.patient.id,
+                        access_granted=access_granted,
+                        metadata=metadata
+                    )
+                    
+                    if result and result.get('success'):
+                        # Save transaction hash immediately (even if pending)
+                        scan_log.blockchain_tx_hash = result.get('transaction_hash')
+                        
+                        # Mark as verified if we have tx hash
+                        if result.get('transaction_hash'):
+                            scan_log.blockchain_verified = True
+                        
+                        # Add confirmed data if available
+                        if not result.get('pending'):
+                            scan_log.blockchain_log_id = result.get('log_id')
+                            scan_log.blockchain_block_number = result.get('block_number')
+                        
+                        scan_log.save()
+                        
+                        status = "pending" if result.get('pending') else "confirmed"
+                        logger.info(f"✓ Scan logged to blockchain ({status}): {result.get('transaction_hash')}")
+                    else:
+                        logger.warning(f"Failed to log to blockchain: {result.get('error') if result else 'Unknown error'}")
+                else:
+                    logger.warning("Blockchain service not connected")
+        except Exception as blockchain_error:
+            # Don't fail the scan if blockchain logging fails
+            logger.error(f"Blockchain logging error: {str(blockchain_error)}")
         
         return scan_log
     

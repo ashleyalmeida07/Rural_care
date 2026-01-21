@@ -121,6 +121,16 @@ class QRCodeScanLog(models.Model):
     access_granted = models.BooleanField(default=True)
     denial_reason = models.CharField(max_length=255, blank=True, null=True)
     
+    # Blockchain verification fields
+    blockchain_tx_hash = models.CharField(max_length=66, blank=True, null=True, 
+                                          help_text='Ethereum transaction hash')
+    blockchain_log_id = models.BigIntegerField(blank=True, null=True,
+                                                help_text='Smart contract log ID')
+    blockchain_block_number = models.BigIntegerField(blank=True, null=True,
+                                                      help_text='Block number on blockchain')
+    blockchain_verified = models.BooleanField(default=False,
+                                               help_text='Whether logged on blockchain')
+    
     class Meta:
         db_table = 'qr_code_scan_logs'
         ordering = ['-scan_timestamp']
@@ -129,6 +139,12 @@ class QRCodeScanLog(models.Model):
     
     def __str__(self):
         return f"Scan by Dr. {self.scanned_by.username if self.scanned_by else 'Unknown'} - {self.scan_timestamp}"
+    
+    def get_etherscan_url(self):
+        """Get Etherscan URL for this transaction"""
+        if self.blockchain_tx_hash:
+            return f"https://sepolia.etherscan.io/tx/{self.blockchain_tx_hash}"
+        return None
 
 
 class DoctorProfile(models.Model):

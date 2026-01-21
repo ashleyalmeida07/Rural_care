@@ -132,7 +132,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# Changed from UTC to Asia/Kolkata (IST) for correct local time display
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -160,6 +161,12 @@ SUPABASE_STORAGE_BUCKET = os.getenv('SUPABASE_STORAGE_BUCKET', 'media')
 # Site URL
 SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
 
+# Blockchain Configuration (Ethereum Sepolia Testnet)
+ALCHEMY_RPC_URL = os.getenv('ALCHEMY_RPC_URL', 'https://eth-sepolia.g.alchemy.com/v2/ZAE-pO0igQ8nXoQXUiylr')
+BLOCKCHAIN_PRIVATE_KEY = os.getenv('BLOCKCHAIN_PRIVATE_KEY', '290493c95dfbcd38967f94a43bf16f4552abdf76ccfe4cc47652518963cf6bd8')
+BLOCKCHAIN_CONTRACT_ADDRESS = os.getenv('BLOCKCHAIN_CONTRACT_ADDRESS', '')  # Set after deployment
+BLOCKCHAIN_ENABLED = os.getenv('BLOCKCHAIN_ENABLED', 'True').lower() == 'true'
+
 # Session settings
 SESSION_COOKIE_AGE = 86400  # 24 hours
 SESSION_SAVE_EVERY_REQUEST = True
@@ -175,12 +182,22 @@ LOGIN_REDIRECT_URL = 'patient_dashboard'  # Redirects to patient dashboard after
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Always use Supabase Storage for file uploads (even with local SQLite database)
+# Using local file storage for media files
 STORAGES = {
     "default": {
-        "BACKEND": "authentication.supabase_storage.SupabaseStorage",
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+
+# Alternative: Enable Supabase storage by uncommenting below and setting environment variables:
+# STORAGES = {
+#     "default": {
+#         "BACKEND": "authentication.supabase_storage.SupabaseStorage",
+#     },
+#     "staticfiles": {
+#         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+#     },
+# }
