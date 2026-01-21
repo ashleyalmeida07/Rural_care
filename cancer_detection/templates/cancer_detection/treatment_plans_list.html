@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Treatment Plans - Cancer Detection{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold text-slate-900">Treatment Plans</h1>
+                    <p class="text-slate-600 mt-2">Your personalized AI-generated treatment pathways</p>
+                </div>
+                <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row gap-3">
+                    <a href="{% url 'cancer_detection:create_comprehensive_plan' %}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:shadow-lg text-white font-semibold rounded-xl transition duration-200">
+                        <i class="fas fa-project-diagram mr-2"></i>
+                        Comprehensive Plan
+                    </a>
+                    <a href="{% url 'cancer_detection:analysis_list' %}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary/90 hover:shadow-lg text-white font-semibold rounded-xl transition duration-200">
+                        <i class="fas fa-plus mr-2"></i>
+                        Generate Plan
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-card border border-border/50 rounded-2xl p-6 shadow-sm">
+                <div class="text-sm text-slate-600 mb-2">Total Plans</div>
+                <div class="text-3xl font-bold text-primary">{{ total_plans }}</div>
+            </div>
+            <div class="bg-card border border-border/50 rounded-2xl p-6 shadow-sm">
+                <div class="text-sm text-slate-600 mb-2">Active Plans</div>
+                <div class="text-3xl font-bold text-green-600">{{ active_plans }}</div>
+            </div>
+            <div class="bg-card border border-border/50 rounded-2xl p-6 shadow-sm">
+                <div class="text-sm text-slate-600 mb-2">Pending Review</div>
+                <div class="text-3xl font-bold text-blue-600">{{ pending_review }}</div>
+            </div>
+        </div>
+
+        <!-- Treatment Plans List -->
+        {% if page_obj %}
+        <div class="space-y-4">
+            {% for plan in page_obj %}
+            <div class="bg-card border border-border/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-4 mb-3">
+                            <h3 class="text-xl font-semibold text-slate-900">{{ plan.plan_name }}</h3>
+                            {% if plan.status == 'draft' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                Draft
+                            </span>
+                            {% elif plan.status == 'pending_review' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                Pending Review
+                            </span>
+                            {% elif plan.status == 'approved' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                Approved
+                            </span>
+                            {% elif plan.status == 'active' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                Active
+                            </span>
+                            {% elif plan.status == 'completed' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-800">
+                                Completed
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <p class="text-xs text-slate-600 uppercase tracking-wide">Cancer Type</p>
+                                <p class="text-sm font-semibold text-slate-900 mt-1">{{ plan.cancer_type|title }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-600 uppercase tracking-wide">Stage</p>
+                                <p class="text-sm font-semibold text-slate-900 mt-1">Stage {{ plan.cancer_stage }}</p>
+                            </div>
+                            {% if plan.predicted_5yr_survival %}
+                            <div>
+                                <p class="text-xs text-slate-600 uppercase tracking-wide">5-Yr Survival</p>
+                                <p class="text-sm font-semibold text-slate-900 mt-1">{{ plan.predicted_5yr_survival|floatformat:1 }}%</p>
+                            </div>
+                            {% endif %}
+                            {% if plan.remission_probability %}
+                            <div>
+                                <p class="text-xs text-slate-600 uppercase tracking-wide">Remission Rate</p>
+                                <p class="text-sm font-semibold text-slate-900 mt-1">{{ plan.remission_probability|floatformat:1 }}%</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <p class="text-sm text-slate-600">
+                            Created {{ plan.created_at|date:"M d, Y" }}
+                        </p>
+                    </div>
+
+                    <div class="mt-4 md:mt-0 flex flex-col gap-2">
+                        <a href="{% url 'cancer_detection:treatment_plan_detail' plan.id %}" class="inline-flex items-center justify-center px-6 py-2 bg-gradient-to-r from-primary to-primary/90 hover:shadow-lg text-white font-semibold rounded-lg transition duration-200">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="mt-8 flex items-center justify-center space-x-2">
+            {% if page_obj.has_previous %}
+            <a href="?page=1" class="px-4 py-2 rounded-lg border border-border/50 hover:bg-muted transition">First</a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 rounded-lg border border-border/50 hover:bg-muted transition">Previous</a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="px-4 py-2 rounded-lg bg-primary text-white font-semibold">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}" class="px-4 py-2 rounded-lg border border-border/50 hover:bg-muted transition">{{ num }}</a>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 rounded-lg border border-border/50 hover:bg-muted transition">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="px-4 py-2 rounded-lg border border-border/50 hover:bg-muted transition">Last</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="bg-card border border-border/50 rounded-2xl p-16 shadow-sm text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-900 mb-2">No Treatment Plans Yet</h3>
+            <p class="text-slate-600 mb-8">Start by analyzing a cancer image to generate your first personalized treatment plan.</p>
+            <a href="{% url 'cancer_detection:analysis_list' %}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary/90 hover:shadow-lg text-white font-semibold rounded-xl transition duration-200">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                View Analyses
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

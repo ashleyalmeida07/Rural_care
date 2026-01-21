@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+
+{% block title %}Doctor Dashboard{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- KYC Status Alert Banner -->
+    {% if not kyc or kyc.status != 'approved' %}
+    <div class="mb-8 bg-card border border-border/50 rounded-2xl p-6 sm:p-8 shadow-sm {% if kyc.status == 'rejected' %}border-red-500/50 bg-red-500/5{% elif kyc.status == 'pending' %}border-yellow-500/50 bg-yellow-500/5{% else %}border-blue-500/50 bg-blue-500/5{% endif %}">
+        <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-4 flex-1">
+                <div class="{% if kyc.status == 'rejected' %}bg-red-500/10{% elif kyc.status == 'pending' %}bg-yellow-500/10{% else %}bg-blue-500/10{% endif %} p-3 rounded-xl flex-shrink-0">
+                    <svg class="h-6 w-6 {% if kyc.status == 'rejected' %}text-red-600{% elif kyc.status == 'pending' %}text-yellow-600{% else %}text-blue-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 0h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    {% if not kyc %}
+                    <h3 class="font-bold {% if kyc.status == 'rejected' %}text-red-900 dark:text-red-300{% elif kyc.status == 'pending' %}text-yellow-900 dark:text-yellow-300{% else %}text-blue-900 dark:text-blue-300{% endif %} text-lg mb-1">KYC Verification Required</h3>
+                    <p class="{% if kyc.status == 'rejected' %}text-red-800 dark:text-red-400{% elif kyc.status == 'pending' %}text-yellow-800 dark:text-yellow-400{% else %}text-blue-800 dark:text-blue-400{% endif %} text-sm sm:text-base">Please complete your KYC verification to unlock full features and enable patient consultations.</p>
+                    {% elif kyc.status == 'pending' %}
+                    <h3 class="font-bold text-yellow-900 dark:text-yellow-300 text-lg mb-1">KYC Under Review</h3>
+                    <p class="text-yellow-800 dark:text-yellow-400 text-sm sm:text-base">Your KYC application is being reviewed. Typically takes 3-5 business days. We'll notify you once the review is complete.</p>
+                    {% elif kyc.status == 'rejected' %}
+                    <h3 class="font-bold text-red-900 dark:text-red-300 text-lg mb-1">KYC Rejected</h3>
+                    <p class="text-red-800 dark:text-red-400 text-sm sm:text-base">Your KYC application was rejected. Please review the feedback and resubmit.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="flex gap-2 flex-shrink-0">
+                {% if not kyc or kyc.status == 'rejected' %}
+                <a href="{% url 'kyc_form' %}" class="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-green-500 hover:shadow-xl text-white font-bold rounded-lg transition-all duration-200 hover:scale-105 whitespace-nowrap text-sm sm:text-base">
+                    {% if kyc.status == 'rejected' %}Resubmit{% else %}Start KYC{% endif %}
+                </a>
+                {% endif %}
+                <a href="{% url 'kyc_status' %}" class="px-4 sm:px-6 py-2 sm:py-3 bg-muted hover:bg-muted/80 text-foreground font-semibold rounded-lg transition-all duration-200 text-sm sm:text-base">
+                    View Status
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Welcome Header -->
+    <div class="bg-card border border-border/50 rounded-2xl p-6 sm:p-8 mb-8 shadow-sm hover:shadow-md transition-all duration-200">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+            <div class="flex items-center gap-4 flex-1 min-w-0">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture }}" alt="Profile" class="h-14 w-14 sm:h-20 sm:w-20 rounded-full flex-shrink-0 ring-4 ring-primary/20 object-cover">
+                {% else %}
+                    <div class="h-14 w-14 sm:h-20 sm:w-20 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center flex-shrink-0 ring-4 ring-primary/20">
+                        <span class="text-2xl sm:text-3xl text-white font-bold">{{ user.first_name.0|default:'D' }}</span>
+                    </div>
+                {% endif %}
+                <div class="flex-1 min-w-0">
+                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground truncate">Welcome, Dr. {{ user.first_name|default:user.username }}!</h1>
+                    <p class="text-sm sm:text-base text-muted-foreground truncate mt-1">{{ user.doctor_profile.specialization|default:"Specialist" }}</p>
+                </div>
+            </div>
+            <div class="text-left sm:text-right flex-shrink-0">
+                <p class="text-xs sm:text-sm text-muted-foreground">Last Login</p>
+                <p class="text-base sm:text-lg font-bold text-foreground">{{ user.last_login|date:"M d, Y" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Patients Card -->
+        <div class="bg-card border border-border/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/50 hover:scale-105">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <p class="text-xs sm:text-sm text-muted-foreground mb-2 font-medium">Total Patients</p>
+                    <p class="text-3xl sm:text-4xl font-bold text-foreground">0</p>
+                </div>
+                <div class="bg-blue-600/10 dark:bg-blue-500/20 p-4 rounded-xl flex-shrink-0">
+                    <i class="fas fa-users text-blue-600 dark:text-blue-400 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Appointments Card -->
+        <div class="bg-card border border-border/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/50 hover:scale-105">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <p class="text-xs sm:text-sm text-muted-foreground mb-2 font-medium">Today's Appointments</p>
+                    <p class="text-3xl sm:text-4xl font-bold text-foreground">0</p>
+                </div>
+                <div class="bg-green-600/10 dark:bg-green-500/20 p-4 rounded-xl flex-shrink-0">
+                    <i class="fas fa-calendar-check text-green-600 dark:text-green-400 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Cases Card -->
+        <div class="bg-card border border-border/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/50 hover:scale-105">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <p class="text-xs sm:text-sm text-muted-foreground mb-2 font-medium">Active Cases</p>
+                    <p class="text-3xl sm:text-4xl font-bold text-foreground">0</p>
+                </div>
+                <div class="bg-purple-600/10 dark:bg-purple-500/20 p-4 rounded-xl flex-shrink-0">
+                    <i class="fas fa-clipboard-list text-purple-600 dark:text-purple-400 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Reviews Card -->
+        <div class="bg-card border border-border/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/50 hover:scale-105">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <p class="text-xs sm:text-sm text-muted-foreground mb-2 font-medium">Pending Reviews</p>
+                    <p class="text-3xl sm:text-4xl font-bold text-foreground">0</p>
+                </div>
+                <div class="bg-red-600/10 dark:bg-red-500/20 p-4 rounded-xl flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Today's Schedule -->
+            <div class="bg-card border border-border/50 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all duration-200">
+                <h2 class="text-2xl sm:text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
+                    <div class="bg-primary/10 p-3 rounded-xl">
+                        <i class="fas fa-calendar-alt text-primary text-xl"></i>
+                    </div>
+                    Today's Schedule
+                </h2>
+                <div class="text-center py-12">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 mb-4">
+                        <i class="fas fa-calendar-day text-3xl text-muted-foreground"></i>
+                    </div>
+                    <p class="text-muted-foreground mb-6 text-lg">No appointments scheduled for today</p>
+                    <button class="bg-gradient-to-r from-primary to-primary/90 hover:shadow-xl text-primary-foreground font-bold px-6 sm:px-8 py-3 rounded-xl transition-all duration-200 hover:scale-105 inline-flex items-center gap-2">
+                        <i class="fas fa-calendar"></i>
+                        View Full Calendar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Patients -->
+            <div class="bg-card border border-border/50 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all duration-200">
+                <h2 class="text-2xl sm:text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
+                    <div class="bg-primary/10 p-3 rounded-xl">
+                        <i class="fas fa-user-injured text-primary text-xl"></i>
+                    </div>
+                    Recent Patients
+                </h2>
+                <div class="text-center py-12">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 mb-4">
+                        <i class="fas fa-users text-3xl text-muted-foreground"></i>
+                    </div>
+                    <p class="text-muted-foreground mb-6 text-lg">No patient records yet</p>
+                    <button class="bg-gradient-to-r from-primary to-primary/90 hover:shadow-xl text-primary-foreground font-bold px-6 sm:px-8 py-3 rounded-xl transition-all duration-200 hover:scale-105 inline-flex items-center gap-2">
+                        <i class="fas fa-user-plus"></i>
+                        Add New Patient
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="space-y-8">
+            <!-- Quick Actions -->
+            <div class="bg-card border border-border/50 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all duration-200">
+                <h2 class="text-xl sm:text-2xl font-bold text-foreground mb-6">Quick Actions</h2>
+                <div class="space-y-3">
+                    <a href="{% url 'cancer_detection:create_comprehensive_plan' %}" class="w-full bg-muted hover:bg-muted/80 text-foreground px-4 py-3 rounded-xl text-left transition-all duration-200 flex items-center font-semibold group hover:scale-105 hover:shadow-md">
+                        <div class="bg-green-600/10 dark:bg-green-500/20 p-3 rounded-lg mr-3 group-hover:scale-110 transition-transform flex-shrink-0">
+                            <i class="fas fa-project-diagram text-green-600 dark:text-green-400"></i>
+                        </div>
+                        <span>Comprehensive Plan</span>
+                    </a>
+                    <a href="{% url 'cancer_detection:upload_histopathology' %}" class="w-full bg-muted hover:bg-muted/80 text-foreground px-4 py-3 rounded-xl text-left transition-all duration-200 flex items-center font-semibold group hover:scale-105 hover:shadow-md">
+                        <div class="bg-purple-600/10 dark:bg-purple-500/20 p-3 rounded-lg mr-3 group-hover:scale-110 transition-transform flex-shrink-0">
+                            <i class="fas fa-microscope text-purple-600 dark:text-purple-400"></i>
+                        </div>
+                        <span>Analyze Pathology</span>
+                    </a>
+                    <a href="{% url 'cancer_detection:upload_genomic' %}" class="w-full bg-muted hover:bg-muted/80 text-foreground px-4 py-3 rounded-xl text-left transition-all duration-200 flex items-center font-semibold group hover:scale-105 hover:shadow-md">
+                        <div class="bg-indigo-600/10 dark:bg-indigo-500/20 p-3 rounded-lg mr-3 group-hover:scale-110 transition-transform flex-shrink-0">
+                            <i class="fas fa-dna text-indigo-600 dark:text-indigo-400"></i>
+                        </div>
+                        <span>Genomic Analysis</span>
+                    </a>
+                    <a href="{% url 'cancer_detection:treatment_plans_list' %}" class="w-full bg-muted hover:bg-muted/80 text-foreground px-4 py-3 rounded-xl text-left transition-all duration-200 flex items-center font-semibold group hover:scale-105 hover:shadow-md">
+                        <div class="bg-blue-600/10 dark:bg-blue-500/20 p-3 rounded-lg mr-3 group-hover:scale-110 transition-transform flex-shrink-0">
+                            <i class="fas fa-clipboard-list text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                        <span>Treatment Plans</span>
+                    </a>
+                    <a href="{% url 'doctor_qr_scanner' %}" class="w-full bg-muted hover:bg-muted/80 text-foreground px-4 py-3 rounded-xl text-left transition-all duration-200 flex items-center font-semibold group hover:scale-105 hover:shadow-md">
+                        <div class="bg-orange-600/10 dark:bg-orange-500/20 p-3 rounded-lg mr-3 group-hover:scale-110 transition-transform flex-shrink-0">
+                            <i class="fas fa-qrcode text-orange-600 dark:text-orange-400"></i>
+                        </div>
+                        <span>QR Scanner</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- AI Insights -->
+            <div class="bg-card border border-border/50 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all duration-200">
+                <h2 class="text-xl sm:text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+                    <div class="bg-primary/10 p-3 rounded-xl">
+                        <i class="fas fa-brain text-primary text-xl"></i>
+                    </div>
+                    AI Insights
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex items-start p-4 rounded-xl bg-muted/50 border border-border/50">
+                        <div class="bg-blue-600/10 dark:bg-blue-500/20 p-3 rounded-lg mr-3 flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground font-medium">No pending AI analyses</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Stats -->
+            <div class="bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-6 sm:p-8 text-primary-foreground border border-primary/30 shadow-lg">
+                <h2 class="text-xl sm:text-2xl font-bold mb-6 flex items-center gap-2">
+                    <i class="fas fa-chart-bar"></i>
+                    This Month
+                </h2>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center py-2 border-b border-primary-foreground/20">
+                        <span class="text-sm opacity-95 flex items-center gap-2">
+                            <i class="fas fa-stethoscope w-4"></i>
+                            Consultations:
+                        </span>
+                        <span class="font-bold text-lg">0</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-primary-foreground/20">
+                        <span class="text-sm opacity-95 flex items-center gap-2">
+                            <i class="fas fa-file-medical w-4"></i>
+                            Treatment Plans:
+                        </span>
+                        <span class="font-bold text-lg">0</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2">
+                        <span class="text-sm opacity-95 flex items-center gap-2">
+                            <i class="fas fa-check-circle w-4"></i>
+                            Success Rate:
+                        </span>
+                        <span class="font-bold text-lg">--%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

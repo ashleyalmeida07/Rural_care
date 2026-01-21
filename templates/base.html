@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Cancer Treatment Planning System{% endblock %}</title>
+    
+    <!-- Preconnect to CDNs -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    
+    <!-- Font Awesome from jsDelivr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" crossorigin="anonymous">
+    
+    <!-- Scripts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
+                        },
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+        }
+        
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+            --primary: 217.2 91.2% 59.8%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 224.3 76.3% 48%;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideInDown {
+            from { 
+                opacity: 0; 
+                transform: translateY(-20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        .slide-in-down {
+            animation: slideInDown 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        .slide-in-up {
+            animation: slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes scaleIn {
+            from { 
+                opacity: 0; 
+                transform: scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+        }
+        .scale-in {
+            animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse-subtle {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Dropdown toggle */
+        .dropdown-menu {
+            display: none;
+            opacity: 0;
+            transform: translateY(-8px);
+            pointer-events: none;
+        }
+        .dropdown-menu.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            animation: slideInDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Smooth transitions */
+        * {
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s, opacity 0.2s;
+        }
+        
+        /* Button transitions */
+        button, a {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Card hover effects */
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Backdrop blur support */
+        @supports (backdrop-filter: blur(10px)) {
+            .backdrop-blur-sm {
+                backdrop-filter: blur(10px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground min-h-screen">
+    <!-- Navigation -->
+    {% if user.is_authenticated %}
+        {% if user.user_type == 'doctor' %}
+            {% include 'partials/navbar_doctor.html' %}
+        {% else %}
+            {% include 'partials/navbar_patient.html' %}
+        {% endif %}
+    {% else %}
+        {% include 'partials/navbar_guest.html' %}
+    {% endif %}
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 space-y-3">
+            {% for message in messages %}
+                <div class="bg-{{ message.tags }}-50 border border-{{ message.tags }}-200 text-{{ message.tags }}-800 px-4 py-3 rounded-lg relative scale-in shadow-sm flex items-start space-x-3" role="alert">
+                    {% if message.tags == 'success' %}
+                        <i class="fas fa-check-circle text-{{ message.tags }}-600 mt-0.5 flex-shrink-0"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="fas fa-exclamation-circle text-{{ message.tags }}-600 mt-0.5 flex-shrink-0"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="fas fa-exclamation-triangle text-{{ message.tags }}-600 mt-0.5 flex-shrink-0"></i>
+                    {% else %}
+                        <i class="fas fa-info-circle text-{{ message.tags }}-600 mt-0.5 flex-shrink-0"></i>
+                    {% endif %}
+                    <span class="flex-1">{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        // Theme Toggle with smooth transition
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.contains('dark');
+            
+            if (isDark) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        // Initialize theme from localStorage
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+        
+        function toggleDropdown() {
+            const dropdown = document.getElementById('doctorDropdown');
+            const chevron = document.getElementById('doctorChevron');
+            dropdown.classList.toggle('show');
+            chevron.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+        
+        function togglePatientDropdown() {
+            const dropdown = document.getElementById('patientDropdown');
+            const chevron = document.getElementById('patientChevron');
+            dropdown.classList.toggle('show');
+            chevron.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+        
+        function toggleDetectionDropdown() {
+            const dropdown = document.getElementById('detectionDropdown');
+            const chevron = document.getElementById('detectionChevron');
+            if (dropdown && chevron) {
+                dropdown.classList.toggle('show');
+                chevron.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
+        }
+
+        function toggleTreatmentDropdown() {
+            const dropdown = document.getElementById('treatmentDropdown');
+            const chevron = document.getElementById('treatmentChevron');
+            if (dropdown && chevron) {
+                dropdown.classList.toggle('show');
+                chevron.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
+        }
+
+        function toggleDataAnalysisDropdown() {
+            const dropdown = document.getElementById('dataAnalysisDropdown');
+            const chevron = document.getElementById('dataAnalysisChevron');
+            if (dropdown && chevron) {
+                dropdown.classList.toggle('show');
+                chevron.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
+        }
+
+        function toggleClinicalDropdown() {
+            const dropdown = document.getElementById('clinicalDropdown');
+            const chevron = document.getElementById('clinicalChevron');
+            if (dropdown && chevron) {
+                dropdown.classList.toggle('show');
+                chevron.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
+        }
+
+        function togglePortalDropdown() {
+            const dropdown = document.getElementById('portalDropdown');
+            const chevron = document.getElementById('portalChevron');
+            if (dropdown && chevron) {
+                dropdown.classList.toggle('show');
+                chevron.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            const doctorDropdown = document.getElementById('doctorDropdown');
+            const patientDropdown = document.getElementById('patientDropdown');
+            const detectionDropdown = document.getElementById('detectionDropdown');
+            const treatmentDropdown = document.getElementById('treatmentDropdown');
+            const dataAnalysisDropdown = document.getElementById('dataAnalysisDropdown');
+            const clinicalDropdown = document.getElementById('clinicalDropdown');
+            const portalDropdown = document.getElementById('portalDropdown');
+            
+            const doctorButton = e.target.closest('button[onclick="toggleDropdown()"]');
+            const patientButton = e.target.closest('button[onclick="togglePatientDropdown()"]');
+            const detectionButton = e.target.closest('button[onclick="toggleDetectionDropdown()"]');
+            const treatmentButton = e.target.closest('button[onclick="toggleTreatmentDropdown()"]');
+            const dataAnalysisButton = e.target.closest('button[onclick="toggleDataAnalysisDropdown()"]');
+            const clinicalButton = e.target.closest('button[onclick="toggleClinicalDropdown()"]');
+            const portalButton = e.target.closest('button[onclick="togglePortalDropdown()"]');
+            const themeButton = e.target.closest('button[onclick="toggleTheme()"]');
+            
+            if (!doctorButton && doctorDropdown && !doctorDropdown.contains(e.target)) {
+                doctorDropdown.classList.remove('show');
+                const chevron = document.getElementById('doctorChevron');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+            
+            if (!patientButton && patientDropdown && !patientDropdown.contains(e.target)) {
+                patientDropdown.classList.remove('show');
+                const chevron = document.getElementById('patientChevron');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+            
+            if (!detectionButton && detectionDropdown && !detectionDropdown.contains(e.target)) {
+                detectionDropdown.classList.remove('show');
+                const chevron = document.getElementById('detectionChevron');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+            
+            if (!treatmentButton && treatmentDropdown && !treatmentDropdown.contains(e.target)) {
+                treatmentDropdown.classList.remove('show');
+                const chevron = document.getElementById('treatmentChevron');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+            
+            if (!dataAnalysisButton && dataAnalysisDropdown && !dataAnalysisDropdown.contains(e.target)) {
+                dataAnalysisDropdown.classList.remove('show');
+                const chevron = document.getElementById('dataAnalysisChevron');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+
+            if (!clinicalButton && clinicalDropdown && !clinicalDropdown.contains(e.target)) {
+                clinicalDropdown.classList.remove('show');
+                const chevron = document.getElementById('clinicalChevron');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+
+            if (!portalButton && portalDropdown && !portalDropdown.contains(e.target)) {
+                portalDropdown.classList.remove('show');
+                const chevron = document.getElementById('portalChevron');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
