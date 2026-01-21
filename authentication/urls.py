@@ -34,4 +34,7 @@ urlpatterns = [
     path('doctor/qr-scanner/', qr_views.doctor_qr_scanner, name='doctor_qr_scanner'),
     path('doctor/qr-scanner/scan/', qr_views.scan_qr_code, name='scan_qr_code'),
     path('doctor/patient/<uuid:patient_id>/profile/', qr_views.scanned_patient_profile, name='scanned_patient_profile'),
+
+    path("clinics/nearby/", views.nearby_clinics_page),
+    path("api/nearby-clinics/", views.nearby_clinics),
 ]

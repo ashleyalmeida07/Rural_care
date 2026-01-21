@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Nearby Clinics</title>
+
+  <link rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    #map { height: 90vh; }
+  </style>
+</head>
+<body>
+
+<h2>Clinics Near You</h2>
+<div id="map"></div>
+
+<script>
+navigator.geolocation.getCurrentPosition(function(pos) {
+    const userLat = pos.coords.latitude;
+    const userLng = pos.coords.longitude;
+
+    const map = L.map('map').setView([userLat, userLng], 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+      .addTo(map);
+
+    // User marker
+    L.marker([userLat, userLng])
+      .addTo(map)
+      .bindPopup("You are here")
+      .openPopup();
+
+    fetch(`/api/nearby-clinics/?lat=${userLat}&lng=${userLng}`)
+      .then(res => res.json())
+      .then(data => {
+        data.clinics.forEach(c => {
+          L.marker([c.lat, c.lng])
+            .addTo(map)
+            .bindPopup(`
+              <b>${c.name}</b><br/>
+              ${c.address}<br/>
+              Phone: ${c.phone}<br/>
+              Distance: ${c.distance} km
+            `);
+        });
+      });
+});
+</script>
+
+</body>
+</html>
