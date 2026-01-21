@@ -5,8 +5,10 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
+from django.conf import settings
 from datetime import datetime
 import json
+import tempfile
 from .models import CancerImageAnalysis, PersonalizedTreatmentPlan, HistopathologyReport, GenomicProfile, TreatmentOutcome
 from .opencv_analyzer import CancerImageAnalyzer
 from .treatment_planner import TreatmentPlanningEngine
@@ -52,11 +54,30 @@ def upload_image(request):
         # Perform analysis
         try:
             analyzer = CancerImageAnalyzer()
-            # Ensure the file is saved before accessing path
+            # Ensure the file is saved before accessing
             if not analysis.image:
                 raise ValueError("Image file not saved properly")
-            image_path = analysis.image.path
+            
+            # Handle both local and cloud storage
+            # Try to get local path first, if not available, download to temp file
+            try:
+                image_path = analysis.image.path
+            except NotImplementedError:
+                # Cloud storage - download to temporary file
+                with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(analysis.image.name)[1]) as tmp_file:
+                    # Read from storage and write to temp file
+                    analysis.image.seek(0)
+                    tmp_file.write(analysis.image.read())
+                    image_path = tmp_file.name
+            
             results = analyzer.analyze_image(image_path, image_type)
+            
+            # Clean up temp file if created
+            if 'tmp_file' in dir() and os.path.exists(image_path) and image_path.startswith(tempfile.gettempdir()):
+                try:
+                    os.unlink(image_path)
+                except:
+                    pass
             
             # Update analysis with results
             analysis.tumor_detected = results.get('tumor_detected', False)
@@ -121,10 +142,10 @@ def delete_analysis(request, analysis_id):
     """Delete an analysis"""
     analysis = get_object_or_404(CancerImageAnalysis, id=analysis_id, user=request.user)
     
-    # Delete the image file
+    # Delete the image file (works for both local and cloud storage)
     if analysis.image:
         try:
-            os.remove(analysis.image.path)
+            analysis.image.delete(save=False)
         except:
             pass
     
@@ -504,7 +525,16 @@ def upload_histopathology_report(request):
         # Extract text from file based on type
         try:
             report_text = ""
-            file_path = report.report_file.path
+            
+            # Handle both local and cloud storage
+            try:
+                file_path = report.report_file.path
+            except NotImplementedError:
+                # Cloud storage - download to temporary file
+                with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as tmp_file:
+                    report.report_file.seek(0)
+                    tmp_file.write(report.report_file.read())
+                    file_path = tmp_file.name
             
             if file_ext == '.txt':
                 # Simple text file - fastest
@@ -556,6 +586,13 @@ def upload_histopathology_report(request):
                     report_text = "Image file uploaded - install pytesseract for OCR"
                 except Exception:
                     report_text = "Image file uploaded - OCR extraction failed"
+            
+            # Clean up temp file if created (from cloud storage)
+            if file_path.startswith(tempfile.gettempdir()):
+                try:
+                    os.unlink(file_path)
+                except:
+                    pass
             
             # Store extracted text
             report.report_text = report_text

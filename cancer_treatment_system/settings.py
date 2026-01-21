@@ -175,22 +175,12 @@ LOGIN_REDIRECT_URL = 'patient_dashboard'  # Redirects to patient dashboard after
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Use local storage when USE_LOCAL_DB is set, otherwise use Supabase
-if USE_LOCAL_DB:
-    STORAGES = {
-        "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-        },
-    }
-else:
-    STORAGES = {
-        "default": {
-            "BACKEND": "authentication.supabase_storage.SupabaseStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-        },
-    }
+# Always use Supabase Storage for file uploads (even with local SQLite database)
+STORAGES = {
+    "default": {
+        "BACKEND": "authentication.supabase_storage.SupabaseStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
