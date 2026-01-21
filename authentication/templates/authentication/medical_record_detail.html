@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load media_tags %}
 
 {% block title %}{{ record.title }}{% endblock %}
 
@@ -37,7 +38,7 @@
                     {% endif %}
                 </div>
             </div>
-            <a href="{{ record.file.url }}" target="_blank" download class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary/90 hover:shadow-xl text-primary-foreground font-bold rounded-xl transition-all duration-200 hover:scale-105 text-sm">
+            <a href="{{ record.document_file|local_media_url }}" target="_blank" download class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary/90 hover:shadow-xl text-primary-foreground font-bold rounded-xl transition-all duration-200 hover:scale-105 text-sm">
                 <i class="fas fa-download mr-2"></i>
                 Download
             </a>
@@ -296,10 +297,10 @@
                     Quick Actions
                 </h3>
                 <div class="space-y-2">
-                    <a href="{{ record.file.url }}" target="_blank" class="block w-full bg-accent hover:bg-accent/70 text-foreground py-2 px-4 rounded-xl transition-colors text-center text-sm font-medium">
+                    <a href="{{ record.document_file|local_media_url }}" target="_blank" class="block w-full bg-accent hover:bg-accent/70 text-foreground py-2 px-4 rounded-xl transition-colors text-center text-sm font-medium">
                         <i class="fas fa-eye mr-2"></i>View File
                     </a>
-                    <a href="{{ record.file.url }}" download class="block w-full bg-accent hover:bg-accent/70 text-foreground py-2 px-4 rounded-xl transition-colors text-center text-sm font-medium">
+                    <a href="{{ record.document_file|local_media_url }}" download class="block w-full bg-accent hover:bg-accent/70 text-foreground py-2 px-4 rounded-xl transition-colors text-center text-sm font-medium">
                         <i class="fas fa-download mr-2"></i>Download
                     </a>
                     <form method="post" action="{% url 'delete_medical_record' record.id %}" onsubmit="return confirm('Are you sure you want to permanently delete this medical record? This action cannot be undone.');" class="w-full">

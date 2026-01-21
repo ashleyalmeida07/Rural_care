@@ -26,6 +26,7 @@ urlpatterns = [
     
     # QR Code Routes
     path('patient/qr-code/', qr_views.patient_qr_dashboard, name='patient_qr_dashboard'),
+    path('patient/qr-code/image/', qr_views.serve_qr_image, name='serve_qr_image'),
     path('patient/qr-code/regenerate/', qr_views.regenerate_qr_code, name='regenerate_qr_code'),
     path('patient/qr-code/disable/', qr_views.disable_qr_code, name='disable_qr_code'),
     path('patient/qr-code/enable/', qr_views.enable_qr_code, name='enable_qr_code'),

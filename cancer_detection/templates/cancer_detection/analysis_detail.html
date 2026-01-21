@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load media_tags %}
 
 {% block title %}Analysis Details{% endblock %}
 
@@ -40,7 +41,7 @@
                 </div>
                 Original Image
             </h2>
-            <img src="{{ analysis.image.url }}" alt="Analysis Image" class="w-full h-auto rounded-2xl shadow-lg ring-4 ring-primary/20 mb-6">
+            <img src="{{ analysis.image|local_media_url }}" alt="Analysis Image" class="w-full h-auto rounded-2xl shadow-lg ring-4 ring-primary/20 mb-6">
             <div class="space-y-3 bg-muted/50 rounded-xl p-4">
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-muted-foreground font-medium">Image Type:</span>
@@ -70,7 +71,7 @@
             <img src="{{ detailed_analysis.annotated_image }}" alt="Annotated Analysis" class="w-full h-auto rounded-2xl shadow-lg ring-4 ring-red-500/20 mb-6">
             {% else %}
             <div class="relative">
-                <img src="{{ analysis.image.url }}" alt="Analysis Image" class="w-full h-auto rounded-2xl shadow-lg ring-4 ring-red-500/20 mb-6">
+                <img src="{{ analysis.image|local_media_url }}" alt="Analysis Image" class="w-full h-auto rounded-2xl shadow-lg ring-4 ring-red-500/20 mb-6">
                 {% if detailed_analysis.primary_detection.bbox %}
                 <div class="absolute border-4 border-red-500 rounded-lg animate-pulse" 
                      style="left: {{ detailed_analysis.primary_detection.bbox.0|divisibleby:1 }}%; top: {{ detailed_analysis.primary_detection.bbox.1|divisibleby:1 }}%; width: {{ detailed_analysis.primary_detection.bbox.2|divisibleby:1 }}px; height: {{ detailed_analysis.primary_detection.bbox.3|divisibleby:1 }}px;">

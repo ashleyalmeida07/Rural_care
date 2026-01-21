@@ -15,10 +15,29 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse, Http404
+from django.views.static import serve
+import os
 from cancer_detection import evidence_web_views
+
+
+def serve_media(request, path):
+    """
+    Custom media file server that serves files from local storage.
+    This handles the case where Supabase storage is configured but files
+    exist locally (before migration to Supabase).
+    """
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        # Serve the file from local storage
+        return serve(request, path, document_root=settings.MEDIA_ROOT)
+    
+    raise Http404("Media file not found")
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,6 +52,9 @@ urlpatterns = [
     path('evidence/rules/', evidence_web_views.rule_based_references_view, name='rule_based_references_view'),
 ]
 
-# Serve media files in development
+# Serve media files - custom handler to serve local files
+# This takes precedence and serves local files directly
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += [
+        re_path(r'^media/(?P<path>.*)$', serve_media, name='serve_media'),
+    ]

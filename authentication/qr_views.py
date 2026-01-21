@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.utils import timezone
+from django.conf import settings
 from cancer_detection.models import CancerImageAnalysis, PersonalizedTreatmentPlan
 from .models import User, PatientQRCode, QRCodeScanLog, PatientProfile, MedicalRecord
 from .qr_utils import (
@@ -17,9 +18,11 @@ from .qr_utils import (
     log_qr_scan,
     regenerate_patient_qr_code,
     disable_patient_qr_code,
-    enable_patient_qr_code
+    enable_patient_qr_code,
+    generate_qr_code
 )
 import json
+import os
 
 
 @login_required
@@ -48,6 +51,48 @@ def patient_qr_dashboard(request):
     }
     
     return render(request, 'authentication/patient_qr_dashboard.html', context)
+
+
+@login_required
+def serve_qr_image(request):
+    """
+    Dynamically generate and serve the QR code image.
+    This is a fallback when stored images are not accessible.
+    """
+    if request.user.user_type != 'patient':
+        return HttpResponse(status=403)
+    
+    qr_code = PatientQRCode.objects.filter(patient=request.user, is_active=True).first()
+    
+    if not qr_code:
+        return HttpResponse(status=404)
+    
+    # Try to serve from local media first
+    if qr_code.qr_code_image:
+        local_path = os.path.join(settings.MEDIA_ROOT, qr_code.qr_code_image.name)
+        if os.path.exists(local_path):
+            with open(local_path, 'rb') as f:
+                return HttpResponse(f.read(), content_type='image/png')
+    
+    # Generate QR code dynamically
+    from io import BytesIO
+    import qrcode
+    
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(qr_code.encrypted_token)
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    img_io = BytesIO()
+    img.save(img_io, format='PNG')
+    img_io.seek(0)
+    
+    return HttpResponse(img_io.getvalue(), content_type='image/png')
 
 
 @login_required

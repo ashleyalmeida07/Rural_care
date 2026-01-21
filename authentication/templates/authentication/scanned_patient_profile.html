@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load media_tags %}
 
 {% block title %}Patient Profile - Doctor Portal{% endblock %}
 
@@ -239,10 +240,10 @@
                                 {% if analysis.image %}
                                 <div class="mt-4 mb-4">
                                     <div class="relative group/image">
-                                        <img src="{{ analysis.image.url }}" 
+                                        <img src="{{ analysis.image|local_media_url }}" 
                                              alt="{{ analysis.image_type }} scan" 
                                              class="w-full h-64 object-contain bg-gray-900 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                             onclick="openImageModal('{{ analysis.image.url }}', '{{ analysis.image_type|upper }} Scan - {{ analysis.created_at|date:'M d, Y' }}')">
+                                             onclick="openImageModal('{{ analysis.image|local_media_url }}', '{{ analysis.image_type|upper }} Scan - {{ analysis.created_at|date:'M d, Y' }}')">
                                         <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity pointer-events-none">
                                             <span class="bg-black/70 text-white px-4 py-2 rounded-lg">
                                                 <i class="fas fa-search-plus mr-2"></i>Click to enlarge
@@ -392,11 +393,11 @@
                                 <!-- Document Action Buttons -->
                                 {% if record.document_file %}
                                 <div class="mt-4 flex gap-3">
-                                    <a href="{{ record.document_file.url }}" target="_blank" 
+                                    <a href="{{ record.document_file|local_media_url }}" target="_blank" 
                                        class="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2.5 rounded-lg transition-all text-center font-semibold text-sm inline-flex items-center justify-center">
                                         <i class="fas fa-eye mr-2"></i>View Document
                                     </a>
-                                    <a href="{{ record.document_file.url }}" download 
+                                    <a href="{{ record.document_file|local_media_url }}" download 
                                        class="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg transition-all text-center font-semibold text-sm inline-flex items-center justify-center">
                                         <i class="fas fa-download mr-2"></i>Download
                                     </a>
