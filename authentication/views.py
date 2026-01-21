@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .supabase_client import get_supabase_client
 from .models import User, PatientProfile, DoctorProfile, DoctorKYC, MedicalRecord
-from .forms import DoctorProfileForm, MedicalRecordForm
+from .forms import DoctorProfileForm, MedicalRecordForm, PatientProfileForm
 import json
 import os
 import re
@@ -409,6 +409,30 @@ def doctor_profile_edit(request):
         form = DoctorProfileForm(instance=doctor_profile)
     
     return render(request, 'authentication/doctor_profile_edit.html', {'form': form})
+
+
+def patient_profile_edit(request):
+    """Edit patient profile"""
+    if not request.user.is_authenticated or request.user.user_type != 'patient':
+        messages.error(request, 'Please login as a patient to access this page.')
+        return redirect('patient_login')
+    
+    try:
+        patient_profile = PatientProfile.objects.get(user=request.user)
+    except PatientProfile.DoesNotExist:
+        # Create profile if it doesn't exist
+        patient_profile = PatientProfile.objects.create(user=request.user)
+    
+    if request.method == 'POST':
+        form = PatientProfileForm(request.POST, instance=patient_profile, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('patient_dashboard')
+    else:
+        form = PatientProfileForm(instance=patient_profile, user=request.user)
+    
+    return render(request, 'authentication/patient_profile_edit.html', {'form': form})
 
 
 # Medical Records Views

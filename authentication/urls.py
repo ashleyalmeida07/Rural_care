@@ -10,6 +10,7 @@ urlpatterns = [
     path('auth/callback/', views.auth_callback, name='auth_callback'),
     path('logout/', views.logout_view, name='logout'),
     path('patient/dashboard/', views.patient_dashboard, name='patient_dashboard'),
+    path('patient/profile/edit/', views.patient_profile_edit, name='patient_profile_edit'),
     path('doctor/dashboard/', views.doctor_dashboard, name='doctor_dashboard'),
     path('doctor/profile/edit/', views.doctor_profile_edit, name='doctor_profile_edit'),
     # KYC Routes

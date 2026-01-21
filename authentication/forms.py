@@ -1,5 +1,5 @@
 from django import forms
-from .models import DoctorProfile, MedicalRecord
+from .models import DoctorProfile, MedicalRecord, PatientProfile, User
 
 class DoctorProfileForm(forms.ModelForm):
     class Meta:
@@ -84,3 +84,125 @@ class MedicalRecordForm(forms.ModelForm):
                 raise forms.ValidationError("Only PDF, JPG, JPEG, and PNG files are allowed")
         
         return file
+
+
+class PatientProfileForm(forms.ModelForm):
+    # User fields
+    first_name = forms.CharField(
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-input text-foreground transition-colors',
+            'placeholder': 'First Name'
+        })
+    )
+    last_name = forms.CharField(
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-input text-foreground transition-colors',
+            'placeholder': 'Last Name'
+        })
+    )
+    email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={
+            'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-input text-foreground transition-colors',
+            'placeholder': 'Email Address'
+        })
+    )
+    phone_number = forms.CharField(
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-input text-foreground transition-colors',
+            'placeholder': 'Phone Number'
+        })
+    )
+    
+    class Meta:
+        model = PatientProfile
+        fields = [
+            'date_of_birth', 'gender', 'blood_group', 'address',
+            'emergency_contact_name', 'emergency_contact_phone',
+            'medical_history', 'allergies', 'current_medications'
+        ]
+        widgets = {
+            'date_of_birth': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-input text-foreground transition-colors'
+            }),
+            'gender': forms.Select(
+                choices=[('', 'Select Gender'), ('male', 'Male'), ('female', 'Female'), ('other', 'Other')],
+                attrs={
+                    'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-input text-foreground transition-colors'
+                }
+            ),
+            'blood_group': forms.Select(
+                choices=[
+                    ('', 'Select Blood Group'),
+                    ('A+', 'A+'), ('A-', 'A-'),
+                    ('B+', 'B+'), ('B-', 'B-'),
+                    ('AB+', 'AB+'), ('AB-', 'AB-'),
+                    ('O+', 'O+'), ('O-', 'O-')
+                ],
+                attrs={
+                    'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-input text-foreground transition-colors'
+                }
+            ),
+            'address': forms.Textarea(attrs={
+                'rows': 3,
+                'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-input text-foreground transition-colors',
+                'placeholder': 'Enter your full address'
+            }),
+            'emergency_contact_name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-input text-foreground transition-colors',
+                'placeholder': 'Emergency Contact Name'
+            }),
+            'emergency_contact_phone': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-input text-foreground transition-colors',
+                'placeholder': 'Emergency Contact Phone'
+            }),
+            'medical_history': forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-input text-foreground transition-colors',
+                'placeholder': 'Brief medical history (e.g., past illnesses, surgeries)'
+            }),
+            'allergies': forms.Textarea(attrs={
+                'rows': 3,
+                'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-input text-foreground transition-colors',
+                'placeholder': 'Any known allergies (medications, food, etc.)'
+            }),
+            'current_medications': forms.Textarea(attrs={
+                'rows': 3,
+                'class': 'w-full px-4 py-2 bg-background border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-input text-foreground transition-colors',
+                'placeholder': 'Current medications you are taking'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        # Initialize user fields if user is provided
+        if self.user:
+            self.fields['first_name'].initial = self.user.first_name
+            self.fields['last_name'].initial = self.user.last_name
+            self.fields['email'].initial = self.user.email
+            self.fields['phone_number'].initial = self.user.phone_number
+    
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        
+        # Update user fields
+        if self.user:
+            self.user.first_name = self.cleaned_data.get('first_name', '')
+            self.user.last_name = self.cleaned_data.get('last_name', '')
+            self.user.email = self.cleaned_data.get('email', '')
+            self.user.phone_number = self.cleaned_data.get('phone_number', '')
+            if commit:
+                self.user.save()
+        
+        if commit:
+            profile.save()
+        return profile
