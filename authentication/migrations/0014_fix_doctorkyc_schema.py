@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('authentication', '0013_sync_database_schema'),
+        ('authentication', '0001_squashed_0013_sync_database_schema'),
     ]
 
     operations = [
