@@ -15,6 +15,9 @@ import threading
 from datetime import datetime
 from django.conf import settings
 
+from utils.geocoding import get_lat_lng_from_address
+
+
 def home(request):
     """Home page"""
     if request.user.is_authenticated:
@@ -278,6 +281,17 @@ def kyc_form(request):
         kyc = None
     
     if request.method == 'POST':
+
+        clinic_address = ", ".join(filter(None, [
+            request.POST.get('residential_address'),
+            request.POST.get('city'),
+            request.POST.get('state'),
+            request.POST.get('postal_code'),
+            request.POST.get('country'),
+        ]))
+
+        lat, lng = get_lat_lng_from_address(clinic_address)
+
         # Create or update KYC
         kyc_data = {
             'full_name': request.POST.get('full_name'),
@@ -291,6 +305,11 @@ def kyc_form(request):
             'state': request.POST.get('state'),
             'postal_code': request.POST.get('postal_code'),
             'country': request.POST.get('country'),
+
+            'clinic_address': clinic_address,
+            'clinic_latitude': lat,
+            'clinic_longitude': lng,
+
             'license_number_verified': request.POST.get('license_number_verified'),
             'license_issuing_authority': request.POST.get('license_issuing_authority'),
             'license_issue_date': request.POST.get('license_issue_date') or None,
@@ -344,9 +363,16 @@ def kyc_form(request):
         doctor_profile.state = kyc.state
         doctor_profile.pincode = kyc.postal_code
         doctor_profile.country = kyc.country
+        
+        doctor_profile.clinic_address = clinic_address
+        doctor_profile.clinic_latitude = lat
+        doctor_profile.clinic_longitude = lng
+
         doctor_profile.clinic_address = kyc.residential_address
         doctor_profile.profile_completed = True
         doctor_profile.save()
+
+        lat, lng = get_lat_lng_from_address(clinic_address)
         
         # Update user phone number
         request.user.phone_number = kyc.mobile_number
@@ -881,3 +907,40 @@ def extract_medical_data(text):
         data['test_results'] = test_results
     
     return data
+
+
+from django.http import JsonResponse
+from .models import DoctorKYC
+from utils.location import haversine
+
+def nearby_clinics(request):
+    user_lat = float(request.GET.get("lat"))
+    user_lng = float(request.GET.get("lng"))
+
+    clinics = []
+
+    for clinic in DoctorKYC.objects.exclude(
+        clinic_latitude=None, clinic_longitude=None
+    ):
+        distance = haversine(
+            user_lat, user_lng,
+            clinic.clinic_latitude, clinic.clinic_longitude
+        )
+
+        if distance <= 2:  # 2 km radius
+            clinics.append({
+                "name": clinic.clinic_name,
+                "address": clinic.clinic_address,
+                "phone": clinic.clinic_phone,
+                "lat": clinic.clinic_latitude,
+                "lng": clinic.clinic_longitude,
+                "distance": round(distance, 2)
+            })
+
+    return JsonResponse({"clinics": clinics})
+
+def nearby_clinics_page(request):
+    """
+    Renders the map page where users can see nearby clinics.
+    """
+    return render(request, 'authentication/nearby_clinics.html')

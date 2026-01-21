@@ -269,6 +269,10 @@ class DoctorKYC(models.Model):
     state = models.CharField(max_length=100, null=True, blank=True)
     postal_code = models.CharField(max_length=10, null=True, blank=True)
     country = models.CharField(max_length=100, null=True, blank=True)
+
+    #clinic_address = models.TextField(null=True, blank=True)
+    #clinic_latitude = models.FloatField(null=True, blank=True)
+    #clinic_longitude = models.FloatField(null=True, blank=True)
     
     # Medical License Information
     license_number_verified = models.CharField(max_length=100, null=True, blank=True)
