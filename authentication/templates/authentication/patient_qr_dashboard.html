@@ -20,16 +20,37 @@
             <div class="bg-card border border-border/50 rounded-2xl p-8 shadow-sm">
                 <div class="flex flex-col items-center">
                     <!-- QR Code Image -->
-                    {% if qr_code and qr_code.qr_code_image %}
-                    <div class="bg-white p-6 rounded-xl border border-border/20 mb-6">
-                        <img src="{{ qr_code.qr_code_image.url }}" alt="Patient QR Code" class="w-64 h-64 object-contain">
-                    </div>
-                    <p class="text-sm text-muted-foreground text-center mb-6">Scan this code with a doctor's device to share your medical profile instantly</p>
+                    {% if qr_code %}
+                        {% if qr_code.qr_code_image %}
+                            <div class="bg-white p-6 rounded-xl border-2 border-primary/20 mb-6 shadow-lg">
+                                <img src="{{ qr_code.qr_code_image.url }}" alt="Patient QR Code" class="w-64 h-64 object-contain">
+                            </div>
+                            <p class="text-sm text-muted-foreground text-center mb-6">Scan this code with a doctor's device to share your medical profile instantly</p>
+                        {% elif qr_code.qr_code_url %}
+                            <div class="bg-white p-6 rounded-xl border-2 border-primary/20 mb-6 shadow-lg">
+                                <img src="{{ qr_code.qr_code_url }}" alt="Patient QR Code" class="w-64 h-64 object-contain" onerror="this.parentElement.innerHTML='<div class=\'text-center p-12\'><i class=\'fas fa-exclamation-triangle text-4xl text-yellow-600 mb-4\'></i><p class=\'text-muted-foreground\'>QR code image not found</p></div>'">
+                            </div>
+                            <p class="text-sm text-muted-foreground text-center mb-6">Scan this code with a doctor's device to share your medical profile instantly</p>
+                        {% else %}
+                            <div class="bg-muted/50 rounded-xl border-2 border-dashed border-border p-12 mb-6 text-center">
+                                <i class="fas fa-qrcode text-5xl text-muted-foreground/50 mb-4 inline-block"></i>
+                                <p class="text-muted-foreground mb-4">QR code image not available</p>
+                                <form method="POST" action="{% url 'regenerate_qr_code' %}" class="inline-block">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition-all">
+                                        <i class="fas fa-sync-alt mr-2"></i>Generate QR Code
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
                     {% else %}
-                    <div class="bg-muted/50 rounded-xl border border-dashed border-border p-12 mb-6 text-center">
-                        <i class="fas fa-qrcode text-5xl text-muted-foreground/50 mb-4 inline-block"></i>
-                        <p class="text-muted-foreground">QR code not generated yet</p>
-                    </div>
+                        <div class="bg-muted/50 rounded-xl border-2 border-dashed border-border p-12 mb-6 text-center">
+                            <i class="fas fa-qrcode text-5xl text-muted-foreground/50 mb-4 inline-block"></i>
+                            <p class="text-muted-foreground mb-4">No QR code generated yet</p>
+                            <button onclick="location.reload()" class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition-all">
+                                <i class="fas fa-plus mr-2"></i>Create QR Code
+                            </button>
+                        </div>
                     {% endif %}
 
                     <!-- Status Badge -->

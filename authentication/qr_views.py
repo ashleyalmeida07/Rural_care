@@ -216,9 +216,27 @@ def scanned_patient_profile(request, patient_id):
         # Get patient data
         patient_data = get_patient_medical_profile(patient)
         
+        # Get the most recent scan log for this patient by this doctor
+        recent_scan = QRCodeScanLog.objects.filter(
+            patient=patient,
+            scanned_by=request.user,
+            access_granted=True
+        ).order_by('-scan_timestamp').first()
+        
+        # Get patient QR code
+        patient_qr = PatientQRCode.objects.filter(patient=patient, is_active=True).first()
+        
+        # Get actual objects for image/document viewing
+        cancer_analyses = CancerImageAnalysis.objects.filter(user=patient).order_by('-created_at')[:5]
+        medical_records = MedicalRecord.objects.filter(patient=patient).order_by('-created_at')
+        
         context = {
             'patient': patient,
             'patient_data': patient_data,
+            'recent_scan': recent_scan,
+            'patient_qr': patient_qr,
+            'cancer_analyses_objects': cancer_analyses,
+            'medical_records_objects': medical_records,
         }
         
         return render(request, 'authentication/scanned_patient_profile.html', context)
