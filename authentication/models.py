@@ -238,6 +238,20 @@ class DoctorKYC(models.Model):
         ('incomplete', 'Incomplete'),
     ]
     
+    IDENTITY_DOCUMENT_CHOICES = [
+        ('passport', 'Passport'),
+        ('aadhaar', 'Aadhaar'),
+        ('national_id', 'National ID'),
+        ('driving_license', 'Driving License'),
+    ]
+    
+    ADDRESS_PROOF_CHOICES = [
+        ('utility_bill', 'Utility Bill'),
+        ('rental_agreement', 'Rental Agreement'),
+        ('property_deed', 'Property Deed'),
+        ('bank_statement', 'Bank Statement'),
+    ]
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     doctor = models.OneToOneField(DoctorProfile, on_delete=models.CASCADE, related_name='kyc')
     
@@ -245,25 +259,45 @@ class DoctorKYC(models.Model):
     full_name = models.CharField(max_length=200)
     date_of_birth = models.DateField()
     gender = models.CharField(max_length=20, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')])
+    nationality = models.CharField(max_length=100, null=True, blank=True)
     
-    # Identification Documents
-    id_type = models.CharField(max_length=50, choices=[('aadhar', 'Aadhar'), ('pan', 'PAN'), ('passport', 'Passport')])
-    id_number = models.CharField(max_length=100, blank=True, null=True)
-    id_document = models.FileField(upload_to='doctor_kyc/id_documents/')
+    # Contact Information
+    personal_email = models.EmailField(null=True, blank=True)
+    mobile_number = models.CharField(max_length=20, null=True, blank=True)
+    residential_address = models.TextField(null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    postal_code = models.CharField(max_length=10, null=True, blank=True)
+    country = models.CharField(max_length=100, null=True, blank=True)
     
-    # Medical Registration
-    registration_number = models.CharField(max_length=100)
-    registration_council = models.CharField(max_length=200)
-    registration_document = models.FileField(upload_to='doctor_kyc/registration_documents/')
+    # Medical License Information
+    license_number_verified = models.CharField(max_length=100, null=True, blank=True)
+    license_issuing_authority = models.CharField(max_length=200, null=True, blank=True)
+    license_issue_date = models.DateField(null=True, blank=True)
+    license_expiry_date = models.DateField(null=True, blank=True)
+    license_document = models.FileField(upload_to='doctor_kyc/license_documents/', null=True, blank=True)
     
-    # Degree/Qualification
-    degree_document = models.FileField(upload_to='doctor_kyc/degree_documents/')
+    # Educational Qualification
+    medical_degree = models.CharField(max_length=200, null=True, blank=True)
+    medical_university = models.CharField(max_length=200, null=True, blank=True)
+    graduation_year = models.IntegerField(null=True, blank=True)
+    degree_certificate = models.FileField(upload_to='doctor_kyc/degree_documents/', null=True, blank=True)
+    
+    # Professional Information
+    current_hospital = models.CharField(max_length=200, null=True, blank=True)
+    designation = models.CharField(max_length=100, null=True, blank=True)
+    department_specialty = models.CharField(max_length=100, null=True, blank=True)
+    years_of_practice = models.IntegerField(null=True, blank=True)
+    employment_document = models.FileField(upload_to='doctor_kyc/employment_documents/', null=True, blank=True)
+    
+    # Identity Documents
+    identity_document_type = models.CharField(max_length=50, choices=IDENTITY_DOCUMENT_CHOICES, null=True, blank=True)
+    identity_document_number = models.CharField(max_length=100, null=True, blank=True)
+    identity_document_file = models.FileField(upload_to='doctor_kyc/identity_documents/', null=True, blank=True)
     
     # Address Proof
-    address_proof_type = models.CharField(max_length=50, choices=[('electricity_bill', 'Electricity Bill'), 
-                                                                    ('gas_bill', 'Gas Bill'), 
-                                                                    ('water_bill', 'Water Bill')])
-    address_proof_document = models.FileField(upload_to='doctor_kyc/address_proofs/')
+    address_proof_type = models.CharField(max_length=50, choices=ADDRESS_PROOF_CHOICES, null=True, blank=True)
+    address_proof_file = models.FileField(upload_to='doctor_kyc/address_proofs/', null=True, blank=True)
     
     # Bank Details (for future payments)
     bank_account_holder = models.CharField(max_length=200, null=True, blank=True)
@@ -272,6 +306,7 @@ class DoctorKYC(models.Model):
     
     # Status and verification
     status = models.CharField(max_length=20, choices=KYC_STATUS_CHOICES, default='pending')
+    rejection_reason = models.TextField(blank=True, null=True)
     verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                     related_name='verified_doctors')
     verification_notes = models.TextField(blank=True, null=True)
@@ -280,6 +315,7 @@ class DoctorKYC(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     verified_at = models.DateTimeField(null=True, blank=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
         return f"KYC - Dr. {self.doctor.user.username}"

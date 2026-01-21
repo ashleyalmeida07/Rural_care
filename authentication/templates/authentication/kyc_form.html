@@ -174,13 +174,19 @@
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-bold text-foreground mb-2 uppercase tracking-wider">License Document (PDF/Image) *</label>
-                        <div class="border-2 border-dashed border-border/50 rounded-xl p-6 hover:border-primary/50 transition-colors text-center cursor-pointer">
-                            <input type="file" name="license_document" accept=".pdf,.jpg,.jpeg,.png" required
-                                class="w-full opacity-0 absolute cursor-pointer" id="license_document">
-                            <i class="fas fa-file-pdf text-3xl text-muted-foreground mb-2"></i>
-                            <p class="text-foreground font-semibold">Upload your medical license certificate</p>
-                            <p class="text-xs text-muted-foreground">PDF or Image (JPG, PNG)</p>
+                        <label class="block text-sm font-bold text-foreground mb-2 uppercase tracking-wider">Medical License Document (PDF/Image) {% if not kyc.license_document %}*{% endif %}</label>
+                        <div class="border-2 border-dashed border-border/50 rounded-xl p-6 hover:border-primary/50 transition-colors text-center cursor-pointer relative" data-file-input="license_document">
+                            <input type="file" name="license_document" accept=".pdf,.jpg,.jpeg,.png" {% if not kyc.license_document %}required{% endif %}
+                                class="w-full h-full opacity-0 absolute inset-0 cursor-pointer z-10" id="license_document">
+                            <i class="fas fa-file-medical text-3xl text-muted-foreground mb-2"></i>
+                            <p class="text-foreground font-semibold file-status">
+                                {% if kyc.license_document %}
+                                    <span class="text-green-500"><i class="fas fa-check-circle"></i></span> Current: {{ kyc.license_document.name|default:"Uploaded" }}
+                                {% else %}
+                                    Upload your medical license document
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-muted-foreground">PDF or Image (JPG, PNG) {% if kyc.license_document %}- Upload to replace{% endif %}</p>
                         </div>
                     </div>
                 </div>
@@ -218,13 +224,19 @@
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-bold text-foreground mb-2 uppercase tracking-wider">Degree Certificate (PDF/Image) *</label>
-                        <div class="border-2 border-dashed border-border/50 rounded-xl p-6 hover:border-primary/50 transition-colors text-center cursor-pointer">
-                            <input type="file" name="degree_certificate" accept=".pdf,.jpg,.jpeg,.png" required
-                                class="w-full opacity-0 absolute cursor-pointer" id="degree_certificate">
+                        <label class="block text-sm font-bold text-foreground mb-2 uppercase tracking-wider">Degree Certificate (PDF/Image) {% if not kyc.degree_certificate %}*{% endif %}</label>
+                        <div class="border-2 border-dashed border-border/50 rounded-xl p-6 hover:border-primary/50 transition-colors text-center cursor-pointer relative" data-file-input="degree_certificate">
+                            <input type="file" name="degree_certificate" accept=".pdf,.jpg,.jpeg,.png" {% if not kyc.degree_certificate %}required{% endif %}
+                                class="w-full h-full opacity-0 absolute inset-0 cursor-pointer z-10" id="degree_certificate">
                             <i class="fas fa-certificate text-3xl text-muted-foreground mb-2"></i>
-                            <p class="text-foreground font-semibold">Upload your medical degree certificate</p>
-                            <p class="text-xs text-muted-foreground">PDF or Image (JPG, PNG)</p>
+                            <p class="text-foreground font-semibold file-status">
+                                {% if kyc.degree_certificate %}
+                                    <span class="text-green-500"><i class="fas fa-check-circle"></i></span> Current: {{ kyc.degree_certificate.name|default:"Uploaded" }}
+                                {% else %}
+                                    Upload your medical degree certificate
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-muted-foreground">PDF or Image (JPG, PNG) {% if kyc.degree_certificate %}- Upload to replace{% endif %}</p>
                         </div>
                     </div>
                 </div>
@@ -270,12 +282,18 @@
 
                     <div class="md:col-span-2">
                         <label class="block text-sm font-bold text-foreground mb-2 uppercase tracking-wider">Employment Document (PDF/Image)</label>
-                        <div class="border-2 border-dashed border-border/50 rounded-xl p-6 hover:border-primary/50 transition-colors text-center cursor-pointer">
+                        <div class="border-2 border-dashed border-border/50 rounded-xl p-6 hover:border-primary/50 transition-colors text-center cursor-pointer relative" data-file-input="employment_document">
                             <input type="file" name="employment_document" accept=".pdf,.jpg,.jpeg,.png"
-                                class="w-full opacity-0 absolute cursor-pointer" id="employment_document">
+                                class="w-full h-full opacity-0 absolute inset-0 cursor-pointer z-10" id="employment_document">
                             <i class="fas fa-file-contract text-3xl text-muted-foreground mb-2"></i>
-                            <p class="text-foreground font-semibold">Upload employment letter or certificate</p>
-                            <p class="text-xs text-muted-foreground">PDF or Image (JPG, PNG)</p>
+                            <p class="text-foreground font-semibold file-status">
+                                {% if kyc.employment_document %}
+                                    <span class="text-green-500"><i class="fas fa-check-circle"></i></span> Current: {{ kyc.employment_document.name|default:"Uploaded" }}
+                                {% else %}
+                                    Upload employment letter or certificate
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-muted-foreground">PDF or Image (JPG, PNG) {% if kyc.employment_document %}- Upload to replace{% endif %}</p>
                         </div>
                     </div>
                 </div>
@@ -309,13 +327,19 @@
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-bold text-foreground mb-2 uppercase tracking-wider">Identity Document (PDF/Image) *</label>
-                        <div class="border-2 border-dashed border-border/50 rounded-xl p-6 hover:border-primary/50 transition-colors text-center cursor-pointer">
-                            <input type="file" name="identity_document_file" accept=".pdf,.jpg,.jpeg,.png" required
-                                class="w-full opacity-0 absolute cursor-pointer" id="identity_document_file">
+                        <label class="block text-sm font-bold text-foreground mb-2 uppercase tracking-wider">Identity Document (PDF/Image) {% if not kyc.identity_document_file %}*{% endif %}</label>
+                        <div class="border-2 border-dashed border-border/50 rounded-xl p-6 hover:border-primary/50 transition-colors text-center cursor-pointer relative" data-file-input="identity_document_file">
+                            <input type="file" name="identity_document_file" accept=".pdf,.jpg,.jpeg,.png" {% if not kyc.identity_document_file %}required{% endif %}
+                                class="w-full h-full opacity-0 absolute inset-0 cursor-pointer z-10" id="identity_document_file">
                             <i class="fas fa-passport text-3xl text-muted-foreground mb-2"></i>
-                            <p class="text-foreground font-semibold">Upload clear copy of your identity document</p>
-                            <p class="text-xs text-muted-foreground">PDF or Image (JPG, PNG)</p>
+                            <p class="text-foreground font-semibold file-status">
+                                {% if kyc.identity_document_file %}
+                                    <span class="text-green-500"><i class="fas fa-check-circle"></i></span> Current: {{ kyc.identity_document_file.name|default:"Uploaded" }}
+                                {% else %}
+                                    Upload clear copy of your identity document
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-muted-foreground">PDF or Image (JPG, PNG) {% if kyc.identity_document_file %}- Upload to replace{% endif %}</p>
                         </div>
                     </div>
                 </div>
@@ -342,13 +366,19 @@
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-bold text-foreground mb-2 uppercase tracking-wider">Address Proof Document (PDF/Image) *</label>
-                        <div class="border-2 border-dashed border-border/50 rounded-xl p-6 hover:border-primary/50 transition-colors text-center cursor-pointer">
-                            <input type="file" name="address_proof_file" accept=".pdf,.jpg,.jpeg,.png" required
-                                class="w-full opacity-0 absolute cursor-pointer" id="address_proof_file">
+                        <label class="block text-sm font-bold text-foreground mb-2 uppercase tracking-wider">Address Proof Document (PDF/Image) {% if not kyc.address_proof_file %}*{% endif %}</label>
+                        <div class="border-2 border-dashed border-border/50 rounded-xl p-6 hover:border-primary/50 transition-colors text-center cursor-pointer relative" data-file-input="address_proof_file">
+                            <input type="file" name="address_proof_file" accept=".pdf,.jpg,.jpeg,.png" {% if not kyc.address_proof_file %}required{% endif %}
+                                class="w-full h-full opacity-0 absolute inset-0 cursor-pointer z-10" id="address_proof_file">
                             <i class="fas fa-file-invoice text-3xl text-muted-foreground mb-2"></i>
-                            <p class="text-foreground font-semibold">Upload utility bill, rental agreement, or property deed</p>
-                            <p class="text-xs text-muted-foreground">PDF or Image (JPG, PNG)</p>
+                            <p class="text-foreground font-semibold file-status">
+                                {% if kyc.address_proof_file %}
+                                    <span class="text-green-500"><i class="fas fa-check-circle"></i></span> Current: {{ kyc.address_proof_file.name|default:"Uploaded" }}
+                                {% else %}
+                                    Upload utility bill, rental agreement, or property deed
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-muted-foreground">PDF or Image (JPG, PNG) {% if kyc.address_proof_file %}- Upload to replace{% endif %}</p>
                         </div>
                     </div>
                 </div>
@@ -372,7 +402,9 @@
 <script>
 // Make file inputs clickable when the div is clicked
 document.querySelectorAll('.border-dashed').forEach(div => {
-    div.addEventListener('click', function() {
+    div.addEventListener('click', function(e) {
+        // Prevent double-triggering when clicking directly on input
+        if (e.target.tagName === 'INPUT') return;
         const input = this.querySelector('input[type="file"]');
         if (input) input.click();
     });
@@ -381,8 +413,9 @@ document.querySelectorAll('.border-dashed').forEach(div => {
     const input = div.querySelector('input[type="file"]');
     if (input) {
         input.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                div.querySelector('p:first-of-type').textContent = 'Selected: ' + this.files[0].name;
+            const statusEl = div.querySelector('.file-status');
+            if (this.files && this.files[0] && statusEl) {
+                statusEl.innerHTML = '<span class="text-blue-500"><i class="fas fa-file"></i></span> Selected: ' + this.files[0].name;
             }
         });
     }

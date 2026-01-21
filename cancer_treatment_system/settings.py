@@ -143,6 +143,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY')
+SUPABASE_STORAGE_BUCKET = os.getenv('SUPABASE_STORAGE_BUCKET', 'media')
 
 # Site URL
 SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
@@ -161,3 +162,14 @@ LOGIN_REDIRECT_URL = 'patient_dashboard'  # Redirects to patient dashboard after
 # Media files (uploaded images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Use Supabase Storage for file uploads in production
+# Set DEFAULT_FILE_STORAGE to use Supabase
+STORAGES = {
+    "default": {
+        "BACKEND": "authentication.supabase_storage.SupabaseStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
