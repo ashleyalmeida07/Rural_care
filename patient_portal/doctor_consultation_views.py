@@ -440,11 +440,11 @@ def doctor_consultations(request):
     past = consultations.filter(Q(scheduled_datetime__lt=now) | ~Q(status='scheduled'))
     
     context = {
-        'upcoming_consultations': upcoming[:10],
-        'past_consultations': past[:10],
+        'upcoming_consultations': upcoming,
+        'past_consultations': past,
         'selected_status': status,
     }
-    return render(request, 'authentication/doctor/consultations.html', context)
+    return render(request, 'authentication/doctor/consultations_list.html', context)
 
 
 @login_required

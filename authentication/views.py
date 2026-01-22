@@ -260,6 +260,12 @@ def doctor_dashboard(request):
     ).count()
     todays_count = todays_consultations.count()
     
+    # Active cases - consultations that are scheduled or in progress
+    active_cases = Consultation.objects.filter(
+        doctor=request.user,
+        status__in=['scheduled', 'active']
+    ).count()
+    
     context = {
         'kyc': kyc,
         'doctor_profile': doctor_profile,
@@ -268,6 +274,7 @@ def doctor_dashboard(request):
         'total_requests': total_requests,
         'pending_requests': pending_requests,
         'todays_count': todays_count,
+        'active_cases': active_cases,
     }
     
     return render(request, 'authentication/doctor_dashboard.html', context)
