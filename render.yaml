@@ -8,11 +8,10 @@ databases:
 services:
   - type: web
     name: rural-care
-    runtime: python
-    plan: free
+    runtime: docker
+    plan: starter  # Starter plan required for Docker with ML ($7/month, 512MB-2GB RAM)
     region: oregon
-    buildCommand: "chmod +x build.sh && ./build.sh"
-    startCommand: "gunicorn cancer_treatment_system.wsgi:application --timeout 120 --workers 1 --threads 2 --worker-class gthread"
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -20,14 +19,36 @@ services:
           property: connectionString
       - key: SECRET_KEY
         generateValue: true
-      - key: PYTHON_VERSION
-        value: 3.11.9
       - key: DEBUG
         value: "False"
-      - key: USE_LIGHTWEIGHT_DEPS
-        value: "true"
       - key: ML_FEATURES_ENABLED
-        value: "False"
+        value: "True"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ALCHEMY_RPC_URL
+        sync: false
+      - key: BLOCKCHAIN_PRIVATE_KEY
+        sync: false
+      - key: BLOCKCHAIN_CONTRACT_ADDRESS
+        sync: false
+      - key: PRESCRIPTION_CONTRACT_ADDRESS
+        sync: false
       - key: BLOCKCHAIN_ENABLED
         sync: false
       - key: EMAIL_HOST_USER
