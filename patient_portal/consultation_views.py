@@ -418,7 +418,7 @@ Please be available 5 minutes before the scheduled time and ensure you have:
 If you need to cancel or reschedule, please log in to your patient portal.
 
 Best regards,
-CancerFreeIndia Team
+RuralCure Team
 """
         
         send_mail(

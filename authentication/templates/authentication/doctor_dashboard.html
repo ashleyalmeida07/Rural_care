@@ -414,8 +414,11 @@ const ringtone = document.getElementById('ringtone');
 const callNotification = document.getElementById('incomingCallNotification');
 let autoHideTimeout = null;
 
-// Check for incoming calls every 2 seconds
-setInterval(checkIncomingCalls, 2000);
+// Check for incoming calls every 1 second (reduced from 2 seconds for faster response)
+setInterval(checkIncomingCalls, 1000);
+
+// Also check immediately on page load
+checkIncomingCalls();
 
 function checkIncomingCalls() {
     fetch('/portal/api/incoming-calls/')
@@ -424,6 +427,11 @@ function checkIncomingCalls() {
             if (data.calls && data.calls.length > 0) {
                 const call = data.calls[0];
                 showIncomingCallNotification(call);
+            } else {
+                // No incoming calls - dismiss notification if showing
+                if (currentCallId && !callNotification.classList.contains('hidden')) {
+                    dismissCallNotification();
+                }
             }
         })
         .catch(error => console.error('Error checking calls:', error));
@@ -442,14 +450,15 @@ function showIncomingCallNotification(call) {
     callNotification.querySelector('div').classList.remove('animate-slide-out-right');
     callNotification.querySelector('div').classList.add('animate-slide-in-right');
     
-    // Play ringtone
-    ringtone.play();
+    // Play ringtone (loop until answered/declined)
+    ringtone.loop = true;
+    ringtone.play().catch(e => console.warn('Could not play ringtone:', e));
     
-    // Auto-hide after 30 seconds
+    // Auto-hide after 45 seconds (increased from 30)
     if (autoHideTimeout) clearTimeout(autoHideTimeout);
     autoHideTimeout = setTimeout(() => {
         dismissCallNotification();
-    }, 30000);
+    }, 45000);
 }
 
 function dismissCallNotification() {

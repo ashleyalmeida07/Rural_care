@@ -210,14 +210,9 @@ async function initializeCall() {
             }
         }
         
-        // Play ringing sound
-        const ringingAudio = document.getElementById('ringing-audio');
-        try {
-            await ringingAudio.play();
-            console.log('Ringing sound playing');
-        } catch (e) {
-            console.warn('Could not play ringing sound:', e);
-        }
+        // Don't play ringing sound on patient side
+        // Ringing only happens on doctor's side via notification
+        console.log('Call initiated, waiting for doctor to join...');
         
         // Check call status
         checkCallStatus();
@@ -246,8 +241,7 @@ function checkCallStatus() {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'active') {
-                // Doctor joined - stop ringing and start call
-                document.getElementById('ringing-audio').pause();
+                // Doctor joined - update status
                 document.getElementById('call-status').textContent = 'Connected';
                 if (isPhone) {
                     document.getElementById('phone-status').textContent = 'Connected';
