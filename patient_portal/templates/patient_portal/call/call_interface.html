@@ -24,11 +24,11 @@
             <!-- Video Call Interface -->
             <div id="video-container" class="w-full h-full absolute inset-0">
                 <!-- Remote video (doctor) -->
-                <video id="remote-video" autoplay playsinline class="w-full h-full object-cover bg-gray-900"></video>
+                <video id="remote-video" autoplay playsinline controls="false" class="w-full h-full object-cover bg-gray-900"></video>
                 
                 <!-- Local video (patient) - small preview -->
                 <div class="absolute bottom-24 md:bottom-28 right-4 md:right-6 w-32 h-24 md:w-48 md:h-36 bg-gray-800 rounded-lg overflow-hidden shadow-2xl border-2 border-white/20 z-10">
-                    <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                    <video id="local-video" autoplay playsinline muted controls="false" class="w-full h-full object-cover"></video>
                 </div>
             </div>
             {% elif is_phone %}
@@ -56,8 +56,8 @@
                 </div>
                 
                 <!-- Hidden audio element for phone call -->
-                <audio id="remote-audio" autoplay></audio>
-                <audio id="local-audio" muted></audio>
+                <audio id="remote-audio" autoplay controls="false"></audio>
+                <audio id="local-audio" muted controls="false"></audio>
             </div>
             {% endif %}
         </div>
@@ -108,38 +108,89 @@ let callStartTime = null;
 let isMuted = false;
 let isVideoOff = false;
 
-// WebRTC configuration
+// WebRTC configuration with better STUN servers
 const configuration = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' }
     ]
 };
 
 // Initialize call
 async function initializeCall() {
     try {
-        // Get user media
-        const constraints = isVideo 
-            ? { video: true, audio: true }
-            : { video: false, audio: true };
+        console.log('Initializing call...');
         
+        // Get user media with specific constraints
+        const constraints = isVideo 
+            ? { 
+                video: { 
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                }, 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            }
+            : { 
+                video: false, 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                    sampleRate: 48000
+                }
+            };
+        
+        console.log('Requesting media with constraints:', constraints);
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        console.log('Got local stream:', localStream);
         
         if (isVideo) {
-            document.getElementById('local-video').srcObject = localStream;
+            const localVideo = document.getElementById('local-video');
+            localVideo.srcObject = localStream;
+            console.log('Local video set');
+        } else {
+            // For audio only, also set it to local-audio element
+            const localAudio = document.getElementById('local-audio');
+            if (localAudio) {
+                localAudio.srcObject = localStream;
+            }
         }
         
         // Play ringing sound
         const ringingAudio = document.getElementById('ringing-audio');
-        ringingAudio.play();
+        try {
+            await ringingAudio.play();
+            console.log('Ringing sound playing');
+        } catch (e) {
+            console.warn('Could not play ringing sound:', e);
+        }
         
         // Check call status
         checkCallStatus();
         
     } catch (error) {
         console.error('Error accessing media devices:', error);
-        alert('Could not access camera/microphone. Please check permissions.');
+        let errorMessage = 'Could not access camera/microphone. ';
+        
+        if (error.name === 'NotAllowedError') {
+            errorMessage += 'Please allow camera and microphone permissions in your browser settings.';
+        } else if (error.name === 'NotFoundError') {
+            errorMessage += 'No camera or microphone found. Please connect a device.';
+        } else if (error.name === 'NotReadableError') {
+            errorMessage += 'Camera or microphone is already in use by another application.';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        alert(errorMessage);
     }
 }
 

@@ -391,6 +391,9 @@ def cancel_consultation(request, consultation_id):
 def send_consultation_confirmation_email(patient, consultation):
     """Send confirmation email to patient"""
     try:
+        # Generate the correct call link
+        call_link = f"{settings.SITE_URL}/portal/call/{consultation.id}/start/"
+        
         subject = f'Consultation Confirmed - {consultation.scheduled_datetime.strftime("%B %d, %Y")}'
         message = f"""
 Dear {patient.first_name} {patient.last_name},
@@ -402,9 +405,15 @@ Date & Time: {consultation.scheduled_datetime.strftime("%B %d, %Y at %I:%M %p")}
 Duration: {consultation.duration_minutes} minutes
 Mode: {consultation.get_mode_display()}
 
-{f'Meeting Link: {consultation.meeting_link}' if consultation.meeting_link else ''}
+To join the call on the scheduled date and time, click here:
+{call_link}
 
-Please be available 5 minutes before the scheduled time.
+Or log in to your patient portal and navigate to "My Consultations" to start the call.
+
+Please be available 5 minutes before the scheduled time and ensure you have:
+- A stable internet connection
+- Camera and microphone permissions enabled in your browser
+- A quiet environment for the consultation
 
 If you need to cancel or reschedule, please log in to your patient portal.
 

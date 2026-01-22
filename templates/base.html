@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Cancer Treatment Planning System{% endblock %}</title>
     
+    <!-- Favicon -->
+    {% load static %}
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    
     <!-- Preconnect to CDNs -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
@@ -12,7 +16,8 @@
     <!-- Font Awesome from jsDelivr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" crossorigin="anonymous">
     
-    <!-- Scripts -->
+    <!-- Tailwind CSS - CDN for development (switch to build process for production) -->
+    <!-- For production: run 'npm install -D tailwindcss' and build CSS file -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>

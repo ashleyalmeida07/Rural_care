@@ -129,3 +129,31 @@ def call_status(request, consultation_id):
         'mode': consultation.mode,
         'started_at': consultation.started_at.isoformat() if consultation.started_at else None,
     })
+    if request.user not in [consultation.patient, consultation.doctor]:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    consultation.call_status = 'ended'
+    consultation.completed_at = timezone.now()
+    consultation.status = 'completed'
+    consultation.save()
+    
+    return JsonResponse({'status': 'ended'})
+
+
+@login_required
+def call_status(request, consultation_id):
+    """Get current call status"""
+    consultation = get_object_or_404(
+        Consultation,
+        id=consultation_id
+    )
+    
+    # Check if user is part of this consultation
+    if request.user not in [consultation.patient, consultation.doctor]:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    return JsonResponse({
+        'status': consultation.call_status,
+        'mode': consultation.mode,
+        'started_at': consultation.started_at.isoformat() if consultation.started_at else None,
+    })
