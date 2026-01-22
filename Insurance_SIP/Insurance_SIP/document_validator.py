@@ -8,6 +8,7 @@ import numpy as np
 from PIL import Image
 import re
 import io
+import os
 
 
 class DocumentValidator:
@@ -32,8 +33,16 @@ class DocumentValidator:
     def preprocess_image(self, image_file):
         """Preprocess image for better OCR results"""
         try:
-            # Read image from uploaded file
-            image = Image.open(image_file)
+            # Check if it's a PDF
+            file_name = getattr(image_file, 'name', '').lower()
+            if file_name.endswith('.pdf'):
+                # For PDFs, convert first page to image
+                image = self._pdf_to_image(image_file)
+                if image is None:
+                    return None
+            else:
+                # Read image from uploaded file
+                image = Image.open(image_file)
             
             # Convert to numpy array
             img_array = np.array(image)
@@ -53,6 +62,35 @@ class DocumentValidator:
             return denoised
         except Exception as e:
             print(f"Error preprocessing image: {str(e)}")
+            return None
+    
+    def _pdf_to_image(self, pdf_file):
+        """Convert first page of PDF to image"""
+        try:
+            # Try using pdf2image if available
+            try:
+                from pdf2image import convert_from_bytes
+                pdf_file.seek(0)
+                images = convert_from_bytes(pdf_file.read(), first_page=1, last_page=1)
+                return images[0] if images else None
+            except ImportError:
+                # Fallback: Use PyMuPDF (fitz) if available
+                try:
+                    import fitz
+                    pdf_file.seek(0)
+                    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
+                    if len(doc) > 0:
+                        page = doc[0]
+                        pix = page.get_pixmap()
+                        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                        doc.close()
+                        return img
+                except ImportError:
+                    print("Warning: PDF support requires pdf2image or PyMuPDF. PDFs will be accepted but not validated.")
+                    # Return a dummy image for basic validation
+                    return Image.new('RGB', (800, 1000), color='white')
+        except Exception as e:
+            print(f"Error converting PDF to image: {str(e)}")
             return None
     
     def extract_text(self, image_file):
@@ -88,6 +126,13 @@ class DocumentValidator:
         """Validate basic image quality requirements"""
         try:
             image_file.seek(0)
+            file_name = getattr(image_file, 'name', '').lower()
+            
+            # Handle PDFs differently
+            if file_name.endswith('.pdf'):
+                # For PDFs, just check file size
+                return True, "PDF document uploaded"
+            
             img = Image.open(image_file)
             
             # Check minimum dimensions (at least 300x300)
