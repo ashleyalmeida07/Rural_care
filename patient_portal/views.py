@@ -17,8 +17,10 @@ import os
 
 from .models import (
     PatientSymptomLog, PatientTreatmentExplanation,
-    PatientSideEffectInfo, PatientAlert, PatientNotificationPreference
+    PatientSideEffectInfo, PatientAlert, PatientNotificationPreference,
+    UserBadge
 )
+from .gamification_service import GamificationService
 from clinical_decision_support.models import AIConfidenceMetadata, ToxicityPrediction
 from cancer_detection.models import PersonalizedTreatmentPlan
 
@@ -539,7 +541,22 @@ def symptom_log_create(request):
                 is_urgent=True
             )
         
+        # Check for badges and level ups (signals will handle this, but we can also check here for immediate response)
+        activity_data = {'id': str(log.id), 'log_date': log.log_date.isoformat()}
+        newly_earned_badges = GamificationService.check_and_award_badges(
+            request.user,
+            activity_type='symptom_logged',
+            activity_data=activity_data
+        )
+        level_info = GamificationService.check_level_up(request.user)
+        
         messages.success(request, 'Your symptoms have been logged successfully.')
+        
+        # If badges were earned, store them in session for pop-up display
+        if newly_earned_badges or level_info.get('leveled_up'):
+            request.session['newly_earned_badges'] = newly_earned_badges
+            request.session['level_up'] = level_info if level_info.get('leveled_up') else None
+        
         return redirect('patient_portal:symptom_log_list')
     
     context = {
@@ -923,3 +940,50 @@ def api_symptom_trend(request):
         })
     
     return JsonResponse({'data': data})
+
+
+@login_required
+@patient_required
+def api_check_new_badges(request):
+    """API endpoint to check for newly earned badges"""
+    # Check session for badges earned in current request
+    newly_earned_badges = request.session.pop('newly_earned_badges', [])
+    level_up = request.session.pop('level_up', None)
+    
+    # Also check for any badges earned in the last minute (in case of async processing)
+    from datetime import timedelta
+    recent_badges = UserBadge.objects.filter(
+        user=request.user,
+        earned_at__gte=timezone.now() - timedelta(minutes=1),
+        notification_sent=False
+    ).select_related('badge').order_by('-earned_at')
+    
+    # Mark as sent and add to response
+    for user_badge in recent_badges:
+        if str(user_badge.badge.id) not in [b['id'] for b in newly_earned_badges]:
+            newly_earned_badges.append({
+                'id': str(user_badge.badge.id),
+                'name': user_badge.badge.name,
+                'description': user_badge.badge.description,
+                'category': user_badge.badge.category,
+                'rarity': user_badge.badge.rarity,
+                'points_reward': user_badge.badge.points_reward,
+                'icon_url': user_badge.badge.icon_url,
+                'icon_name': user_badge.badge.icon_name,
+            })
+        user_badge.notification_sent = True
+        user_badge.save()
+    
+    return JsonResponse({
+        'badges': newly_earned_badges,
+        'level_up': level_up,
+        'has_new': len(newly_earned_badges) > 0 or (level_up and level_up.get('leveled_up'))
+    })
+
+
+@login_required
+@patient_required
+def api_user_stats(request):
+    """Get user gamification stats"""
+    stats = GamificationService.get_user_stats(request.user)
+    return JsonResponse(stats)

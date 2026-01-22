@@ -220,6 +220,11 @@
         </div>
     {% endif %}
 
+    <!-- Badge Pop-up (for patients) -->
+    {% if user.is_authenticated and user.user_type == 'patient' %}
+        {% include 'partials/badge_popup.html' %}
+    {% endif %}
+
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {% block content %}{% endblock %}
