@@ -25,11 +25,11 @@
             <!-- Video Call Interface -->
             <div id="video-container" class="w-full h-full absolute inset-0">
                 <!-- Remote video (patient) -->
-                <video id="remote-video" autoplay playsinline controls="false" class="w-full h-full object-cover bg-gray-900"></video>
+                <video id="remote-video" autoplay playsinline class="w-full h-full object-cover bg-gray-900"></video>
                 
                 <!-- Local video (doctor) - small preview -->
                 <div class="absolute bottom-24 md:bottom-28 right-4 md:right-6 w-32 h-24 md:w-48 md:h-36 bg-gray-800 rounded-lg overflow-hidden shadow-2xl border-2 border-white/20 z-10">
-                    <video id="local-video" autoplay playsinline muted controls="false" class="w-full h-full object-cover"></video>
+                    <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
                 </div>
             </div>
             {% elif is_phone %}
@@ -57,8 +57,8 @@
                 </div>
                 
                 <!-- Hidden audio element for phone call -->
-                <audio id="remote-audio" autoplay controls="false"></audio>
-                <audio id="local-audio" muted controls="false"></audio>
+                <audio id="remote-audio" autoplay></audio>
+                <audio id="local-audio" muted></audio>
             </div>
             {% endif %}
         </div>
