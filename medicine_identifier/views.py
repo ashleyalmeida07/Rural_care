@@ -118,6 +118,12 @@ def upload_medicine_image(request):
             # Convert numpy types to Python native types for JSON serialization
             analysis_results = convert_to_json_serializable(analysis_results)
             
+            # Check if the image is a valid medicine image
+            is_valid_medicine = analysis_results.get('is_valid_medicine_image', True)
+            medicine_confidence = analysis_results.get('medicine_confidence_score', 0.5)
+            validation_reason = analysis_results.get('validation_reason', '')
+            validation_suggestions = analysis_results.get('validation_suggestions', [])
+            
             identification.extracted_text = analysis_results.get('extracted_text', '')
             identification.ocr_confidence = float(analysis_results.get('ocr_confidence', 0.0))
             identification.image_analysis = analysis_results.get('visual_analysis', {})
@@ -145,6 +151,37 @@ def upload_medicine_image(request):
             
             # Convert AI results to ensure JSON serialization
             ai_results = convert_to_json_serializable(ai_results)
+            
+            # Check if AI also detected non-medicine image
+            ai_detected_not_medicine = ai_results.get('is_not_medicine', False)
+            ai_invalid_reason = ai_results.get('invalid_image_reason', '')
+            
+            # Combine validation results
+            if not is_valid_medicine or ai_detected_not_medicine:
+                # This is not a valid medicine image
+                identification.ai_analysis = {
+                    'identification_successful': False,
+                    'is_not_medicine': True,
+                    'invalid_image_reason': ai_invalid_reason or validation_reason,
+                    'validation_suggestions': validation_suggestions,
+                    'medicine_confidence_score': medicine_confidence,
+                    'safety_disclaimer': "Please upload a clear image of actual medicine packaging, tablets, or medicine bottles for accurate identification."
+                }
+                identification.status = 'invalid_image'
+                identification.identification_confidence = 0.0
+                identification.error_message = validation_reason or ai_invalid_reason or "The uploaded image does not appear to be a medicine. Please upload a valid medicine image."
+                identification.processing_time_seconds = time.time() - start_time
+                identification.save()
+                
+                # Clean up temp file if created
+                if 'tmp_file' in dir() and os.path.exists(image_path) and image_path.startswith(tempfile.gettempdir()):
+                    try:
+                        os.unlink(image_path)
+                    except:
+                        pass
+                
+                messages.warning(request, 'The uploaded image does not appear to be a medicine. Please upload a valid medicine image.')
+                return redirect('medicine_identifier:result', identification_id=identification.id)
             
             # Update identification with results
             identification.ai_analysis = ai_results
@@ -336,6 +373,7 @@ def medicine_dashboard(request):
             identification_confidence__gte=0.6
         ).count(),
         'failed_identifications': user_identifications.filter(status='failed').count(),
+        'invalid_images': user_identifications.filter(status='invalid_image').count(),
         'recent_medicines': user_identifications.filter(
             status='completed',
             medicine_name__isnull=False
@@ -400,12 +438,55 @@ def api_identify_medicine(request):
         image_analyzer = MedicineImageAnalyzer()
         analysis_results = image_analyzer.analyze_image(image_path)
         
+        # Convert numpy types
+        analysis_results = convert_to_json_serializable(analysis_results)
+        
+        # Check if valid medicine image
+        is_valid_medicine = analysis_results.get('is_valid_medicine_image', True)
+        validation_reason = analysis_results.get('validation_reason', '')
+        validation_suggestions = analysis_results.get('validation_suggestions', [])
+        
         groq_service = GroqMedicineIdentifier()
+        
+        # Build detected info
+        detected_info = analysis_results.get('detected_medicine_info', {})
+        extracted_text = analysis_results.get('cleaned_text', '')
+        
+        if not extracted_text or len(extracted_text.strip()) < 5:
+            filename_hint = os.path.splitext(image_file.name)[0]
+            filename_hint = filename_hint.replace('_', ' ').replace('-', ' ')
+            detected_info['filename_hint'] = filename_hint
+            extracted_text = f"Filename suggests: {filename_hint}"
+        
         ai_results = groq_service.identify_medicine(
-            extracted_text=analysis_results.get('cleaned_text', ''),
+            extracted_text=extracted_text,
             image_analysis=analysis_results.get('visual_analysis', {}),
-            detected_info=analysis_results.get('detected_medicine_info', {})
+            detected_info=detected_info
         )
+        
+        # Convert AI results
+        ai_results = convert_to_json_serializable(ai_results)
+        
+        # Check for invalid image
+        ai_detected_not_medicine = ai_results.get('is_not_medicine', False)
+        
+        if not is_valid_medicine or ai_detected_not_medicine:
+            identification.status = 'invalid_image'
+            identification.error_message = validation_reason or ai_results.get('invalid_image_reason', 'Invalid medicine image')
+            identification.ai_analysis = {
+                'identification_successful': False,
+                'is_not_medicine': True,
+                'invalid_image_reason': validation_reason or ai_results.get('invalid_image_reason'),
+                'validation_suggestions': validation_suggestions
+            }
+            identification.save()
+            return JsonResponse({
+                'success': False,
+                'error': 'invalid_image',
+                'message': 'The uploaded image does not appear to be a medicine.',
+                'reason': validation_reason or ai_results.get('invalid_image_reason'),
+                'suggestions': validation_suggestions
+            }, status=400)
         
         # Update record
         identification.extracted_text = analysis_results.get('extracted_text', '')

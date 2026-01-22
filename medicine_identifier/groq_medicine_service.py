@@ -99,12 +99,18 @@ IDENTIFICATION STRATEGIES:
 - If dosage is visible (500mg, 650mg), use it to narrow down the medicine
 - Visual features like red/yellow tablets can help identify specific products
 
+CRITICAL VALIDATION RULES:
+1. If the text/context clearly indicates NON-MEDICINE content (food, animals, people, landscapes, electronics, vehicles, clothing, etc.), set "identification_successful" to false and "is_not_medicine" to true
+2. Examples of non-medicine: restaurant menus, food items, selfies, pet photos, car images, building photos, sports content, electronics, clothing
+3. If the image appears to be random or unrelated to medicine, clearly indicate this
+
 IMPORTANT RULES:
 1. Try to identify the medicine even with limited information
 2. If you're 70%+ confident, provide identification with confidence level
 3. For common medicines like Crocin, Dolo, Paracetamol - provide complete accurate details
 4. Always include a safety disclaimer recommending professional medical advice
-5. Never make up specific dosage instructions - always recommend consulting a doctor"""
+5. Never make up specific dosage instructions - always recommend consulting a doctor
+6. If image is NOT a medicine, set "is_not_medicine": true and explain why"""
                     },
                     {
                         "role": "user",
@@ -180,6 +186,8 @@ IMPORTANT RULES:
 Please provide a detailed response in the following JSON format:
 {{
     "identification_successful": true/false,
+    "is_not_medicine": true/false,
+    "invalid_image_reason": "Explain why this is not a medicine image (only if is_not_medicine is true)",
     "confidence_level": "high/medium/low",
     "medicine_name": "Name of the medicine",
     "generic_name": "Generic/active ingredient name",
@@ -210,10 +218,11 @@ Please provide a detailed response in the following JSON format:
 }}
 
 IMPORTANT:
-1. If you cannot identify the medicine with confidence, set "identification_successful" to false and explain why.
-2. Always include a safety disclaimer recommending professional medical advice.
-3. Provide accurate information - do not make up details you're not sure about.
-4. If the text is unclear or incomplete, mention what information would help with better identification.
+1. If the image/text clearly shows NON-MEDICINE content, set "identification_successful" to false AND "is_not_medicine" to true, with "invalid_image_reason" explaining what was detected.
+2. If you cannot identify the medicine with confidence but it MIGHT be medicine, set "identification_successful" to false and "is_not_medicine" to false.
+3. Always include a safety disclaimer recommending professional medical advice.
+4. Provide accurate information - do not make up details you're not sure about.
+5. If the text is unclear or incomplete, mention what information would help with better identification.
 
 Respond ONLY with the JSON object, no additional text."""
     
@@ -235,6 +244,8 @@ Respond ONLY with the JSON object, no additional text."""
             
             # Ensure required fields exist
             result.setdefault('identification_successful', False)
+            result.setdefault('is_not_medicine', False)
+            result.setdefault('invalid_image_reason', None)
             result.setdefault('confidence_level', 'low')
             result.setdefault('medicine_name', None)
             result.setdefault('uses', [])

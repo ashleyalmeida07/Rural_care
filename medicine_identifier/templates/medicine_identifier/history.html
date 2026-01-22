@@ -58,6 +58,10 @@
                                     <span class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300 text-xs font-medium rounded-full">
                                         <i class="fas fa-question mr-1"></i>Partial
                                     </span>
+                                    {% elif item.status == 'invalid_image' %}
+                                    <span class="px-3 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-300 text-xs font-medium rounded-full">
+                                        <i class="fas fa-image mr-1"></i>Invalid Image
+                                    </span>
                                     {% elif item.status == 'failed' %}
                                     <span class="px-3 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300 text-xs font-medium rounded-full">
                                         <i class="fas fa-times mr-1"></i>Failed

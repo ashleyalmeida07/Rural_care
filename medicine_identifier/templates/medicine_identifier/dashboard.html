@@ -16,7 +16,7 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 fade-in">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8 fade-in">
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                 <div class="flex items-center">
                     <div class="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
@@ -49,6 +49,18 @@
                     <div class="ml-4">
                         <p class="text-sm text-gray-500 dark:text-gray-400">Failed</p>
                         <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.failed_identifications }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-lg bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
+                        <i class="fas fa-image text-xl text-orange-600 dark:text-orange-400"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Invalid Images</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.invalid_images|default:0 }}</p>
                     </div>
                 </div>
             </div>
@@ -124,13 +136,15 @@
                                 </div>
                                 <div>
                                     {% if item.status == 'completed' and item.identification_confidence >= 0.6 %}
-                                    <span class="w-3 h-3 rounded-full bg-green-500 block"></span>
+                                    <span class="w-3 h-3 rounded-full bg-green-500 block" title="Identified"></span>
                                     {% elif item.status == 'completed' %}
-                                    <span class="w-3 h-3 rounded-full bg-yellow-500 block"></span>
+                                    <span class="w-3 h-3 rounded-full bg-yellow-500 block" title="Partial"></span>
+                                    {% elif item.status == 'invalid_image' %}
+                                    <span class="w-3 h-3 rounded-full bg-orange-500 block" title="Invalid Image"></span>
                                     {% elif item.status == 'failed' %}
-                                    <span class="w-3 h-3 rounded-full bg-red-500 block"></span>
+                                    <span class="w-3 h-3 rounded-full bg-red-500 block" title="Failed"></span>
                                     {% else %}
-                                    <span class="w-3 h-3 rounded-full bg-gray-400 block"></span>
+                                    <span class="w-3 h-3 rounded-full bg-gray-400 block" title="{{ item.status|title }}"></span>
                                     {% endif %}
                                 </div>
                             </div>

@@ -34,6 +34,7 @@ class MedicineIdentification(models.Model):
         ('processing', 'Processing'),
         ('completed', 'Completed'),
         ('failed', 'Failed'),
+        ('invalid_image', 'Invalid Image'),
     ]
     
     # Primary fields
