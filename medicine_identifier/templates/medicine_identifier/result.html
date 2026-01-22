@@ -324,16 +324,75 @@
         </div>
 
         {% else %}
-        <!-- Failed Analysis -->
+        <!-- Failed or Invalid Image Analysis -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden fade-in">
             <div class="p-12 text-center">
+                {% if identification.status == 'invalid_image' %}
+                <!-- Invalid Image - Not Medicine -->
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-orange-100 dark:bg-orange-900 mb-6">
+                    <i class="fas fa-image text-4xl text-orange-500"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Invalid Image</h2>
+                <div class="max-w-xl mx-auto">
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">{{ identification.error_message|default:"The uploaded image does not appear to be a medicine." }}</p>
+                    
+                    {% if identification.ai_analysis.validation_suggestions %}
+                    <div class="text-left bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl mb-6">
+                        <h4 class="font-semibold text-blue-800 dark:text-blue-300 mb-3">
+                            <i class="fas fa-lightbulb mr-2"></i>Tips for better results:
+                        </h4>
+                        <ul class="space-y-2">
+                            {% for suggestion in identification.ai_analysis.validation_suggestions %}
+                            <li class="flex items-start text-blue-700 dark:text-blue-400">
+                                <i class="fas fa-check text-blue-500 mt-1 mr-2 flex-shrink-0"></i>
+                                <span class="text-sm">{{ suggestion }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% else %}
+                    <div class="text-left bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl mb-6">
+                        <h4 class="font-semibold text-blue-800 dark:text-blue-300 mb-3">
+                            <i class="fas fa-lightbulb mr-2"></i>What to upload:
+                        </h4>
+                        <ul class="space-y-2 text-blue-700 dark:text-blue-400">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-blue-500 mt-1 mr-2 flex-shrink-0"></i>
+                                <span class="text-sm">Clear photos of medicine packaging, tablet strips, or medicine bottles</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-blue-500 mt-1 mr-2 flex-shrink-0"></i>
+                                <span class="text-sm">Images showing the medicine name and dosage information</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-blue-500 mt-1 mr-2 flex-shrink-0"></i>
+                                <span class="text-sm">Good lighting with readable text on the label</span>
+                            </li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Show uploaded image -->
+                    {% if identification.image %}
+                    <div class="mb-6">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Uploaded image:</p>
+                        <div class="inline-block p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                            <img src="{{ identification.image.url }}" alt="Uploaded Image" class="max-w-xs max-h-48 object-contain rounded opacity-60">
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <!-- General Failed Analysis -->
                 <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-100 dark:bg-red-900 mb-6">
                     <i class="fas fa-times text-4xl text-red-500"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Analysis Failed</h2>
                 <p class="text-gray-600 dark:text-gray-400 mb-6">{{ identification.error_message|default:"We couldn't identify this medicine. Please try with a clearer image." }}</p>
+                {% endif %}
+                
                 <a href="{% url 'medicine_identifier:upload' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
-                    <i class="fas fa-redo mr-2"></i>Try Again
+                    <i class="fas fa-redo mr-2"></i>Try Again with a Valid Image
                 </a>
             </div>
         </div>

@@ -25,6 +25,35 @@ class MedicineImageAnalyzer:
         self.tesseract_available = False
         self.easyocr_available = False
         
+        # Minimum confidence threshold for valid medicine image
+        self.min_medicine_confidence = 0.3
+        
+        # Keywords that strongly indicate medicine-related content
+        self.strong_medicine_indicators = [
+            'mg', 'ml', 'mcg', 'tablet', 'tablets', 'tab', 'capsule', 'capsules', 'cap',
+            'syrup', 'injection', 'cream', 'ointment', 'gel', 'lotion', 'drops',
+            'dose', 'dosage', 'prescription', 'rx', 'pharma', 'pharmaceutical',
+            'drug', 'medicine', 'medication', 'active ingredient', 'excipient',
+            'manufactured by', 'mfg by', 'batch', 'lot', 'expiry', 'exp date',
+            'for oral use', 'for external use', 'take as directed',
+            'keep out of reach', 'store below', 'keep in cool',
+            'paracetamol', 'ibuprofen', 'aspirin', 'antibiotic', 'antacid',
+            'pain relief', 'fever', 'cold', 'cough', 'allergy',
+        ]
+        
+        # Keywords that suggest non-medicine images
+        self.non_medicine_indicators = [
+            'restaurant', 'food', 'recipe', 'cooking', 'delicious',
+            'fashion', 'clothing', 'wear', 'style',
+            'selfie', 'portrait', 'vacation', 'travel', 'tourism',
+            'animal', 'pet', 'dog', 'cat', 'bird',
+            'car', 'vehicle', 'automobile', 'motorcycle',
+            'landscape', 'nature', 'mountain', 'beach', 'sunset',
+            'building', 'architecture', 'house', 'apartment',
+            'electronics', 'phone', 'computer', 'laptop', 'gadget',
+            'sports', 'game', 'player', 'team', 'score',
+        ]
+        
         # Initialize Tesseract OCR
         try:
             import pytesseract
@@ -159,6 +188,13 @@ class MedicineImageAnalyzer:
             results['visual_analysis']['detected_form'] = self._detect_medicine_form(image, text_results['cleaned_text'])
             
             results['processing_successful'] = True
+            
+            # Validate if this is actually a medicine image
+            validation_result = self._validate_medicine_image(results)
+            results['is_valid_medicine_image'] = validation_result['is_valid']
+            results['medicine_confidence_score'] = validation_result['confidence_score']
+            results['validation_reason'] = validation_result['reason']
+            results['validation_suggestions'] = validation_result.get('suggestions', [])
             
         except Exception as e:
             results['errors'].append(str(e))
@@ -779,3 +815,146 @@ class MedicineImageAnalyzer:
         except Exception as e:
             print(f"Error preprocessing image: {e}")
             return None
+    def _validate_medicine_image(self, analysis_results: Dict) -> Dict:
+        """
+        Validate if the analyzed image is actually a medicine image
+        
+        Args:
+            analysis_results: Results from the image analysis
+            
+        Returns:
+            Dictionary with validation results
+        """
+        validation = {
+            'is_valid': False,
+            'confidence_score': 0.0,
+            'reason': '',
+            'suggestions': []
+        }
+        
+        score = 0.0
+        reasons = []
+        
+        # Get extracted text
+        extracted_text = analysis_results.get('cleaned_text', '').lower()
+        raw_text = analysis_results.get('extracted_text', '').lower()
+        combined_text = f"{extracted_text} {raw_text}"
+        
+        # Get detected medicine info
+        detected_info = analysis_results.get('detected_medicine_info', {})
+        visual_analysis = analysis_results.get('visual_analysis', {})
+        
+        # Check 1: Strong medicine keywords in text (high weight)
+        strong_indicators_found = []
+        for keyword in self.strong_medicine_indicators:
+            if keyword.lower() in combined_text:
+                strong_indicators_found.append(keyword)
+        
+        if len(strong_indicators_found) >= 3:
+            score += 0.5
+            reasons.append(f"Found medicine-related keywords: {', '.join(strong_indicators_found[:5])}")
+        elif len(strong_indicators_found) >= 1:
+            score += 0.25
+            reasons.append(f"Found some medicine keywords: {', '.join(strong_indicators_found[:3])}")
+        
+        # Check 2: Non-medicine keywords (negative weight)
+        non_medicine_found = []
+        for keyword in self.non_medicine_indicators:
+            if keyword.lower() in combined_text:
+                non_medicine_found.append(keyword)
+        
+        if len(non_medicine_found) >= 2:
+            score -= 0.3
+            reasons.append(f"Found non-medicine content indicators: {', '.join(non_medicine_found[:3])}")
+        
+        # Check 3: Detected dosage information
+        if detected_info.get('dosage'):
+            score += 0.2
+            reasons.append(f"Detected dosage: {detected_info['dosage']}")
+        
+        # Check 4: Detected medicine form
+        if detected_info.get('form'):
+            score += 0.15
+            reasons.append(f"Detected form: {detected_info['form']}")
+        
+        # Check 5: Batch/expiry information
+        if detected_info.get('expiry') or detected_info.get('batch_number'):
+            score += 0.15
+            reasons.append("Found batch/expiry information")
+        
+        # Check 6: Warnings found
+        if detected_info.get('warnings_found'):
+            score += 0.1
+            reasons.append("Medical warnings detected")
+        
+        # Check 7: Visual features analysis
+        detected_form = visual_analysis.get('detected_form', 'unknown')
+        if detected_form != 'unknown':
+            score += 0.1
+            reasons.append(f"Visual form detected: {detected_form}")
+        
+        # Check 8: Circular objects (tablets/capsules)
+        circular_objects = visual_analysis.get('circular_objects', 0)
+        if circular_objects > 0:
+            score += 0.1
+            reasons.append(f"Detected {circular_objects} circular objects (possible tablets)")
+        
+        # Check 9: Possible medicine names detected
+        possible_names = detected_info.get('possible_names', [])
+        if possible_names:
+            score += 0.1
+            reasons.append(f"Possible medicine names: {', '.join(possible_names[:3])}")
+        
+        # Check 10: Detected brand from patterns
+        if detected_info.get('detected_brand'):
+            score += 0.25
+            reasons.append(f"Detected brand: {detected_info['detected_brand']}")
+        
+        # Check 11: OCR confidence - very low might indicate non-text image
+        ocr_confidence = analysis_results.get('ocr_confidence', 0)
+        if ocr_confidence < 0.1 and len(combined_text.strip()) < 10:
+            score -= 0.1
+            reasons.append("Very low text content detected")
+        
+        # Check 12: Color analysis for medicine packaging
+        dominant_colors = visual_analysis.get('dominant_colors', [])
+        medicine_packaging_colors = ['white', 'blue', 'green', 'red', 'yellow']
+        for color_info in dominant_colors:
+            if color_info.get('color') in medicine_packaging_colors and color_info.get('percentage', 0) > 10:
+                score += 0.05
+        
+        # Normalize score to 0-1 range
+        score = max(0.0, min(1.0, score))
+        
+        # Determine validation result
+        validation['confidence_score'] = round(score, 2)
+        
+        if score >= self.min_medicine_confidence:
+            validation['is_valid'] = True
+            validation['reason'] = "Image appears to contain medicine-related content. " + " | ".join(reasons[:3])
+        else:
+            validation['is_valid'] = False
+            if not combined_text.strip():
+                validation['reason'] = "No readable text found in the image. This doesn't appear to be a medicine image."
+                validation['suggestions'] = [
+                    "Please upload a clear image of medicine packaging, tablet strip, or medicine bottle",
+                    "Ensure the medicine label or packaging text is clearly visible",
+                    "Try taking the photo in good lighting conditions",
+                    "Avoid blurry or low-quality images"
+                ]
+            elif non_medicine_found:
+                validation['reason'] = f"The image appears to contain non-medicine content ({', '.join(non_medicine_found[:2])}). Please upload a valid medicine image."
+                validation['suggestions'] = [
+                    "Please upload an image of actual medicine packaging, tablets, or medicine bottles",
+                    "The system is designed to identify pharmaceutical products only"
+                ]
+            else:
+                validation['reason'] = "Unable to detect medicine-related content in the image."
+                validation['suggestions'] = [
+                    "Upload a clear photo of the medicine packaging showing the name and dosage",
+                    "Ensure the medicine label is clearly visible and readable",
+                    "Include the full medicine strip or bottle label in the frame",
+                    "Acceptable images: medicine boxes, tablet strips, syrup bottles, cream tubes, etc."
+                ]
+        
+        return validation

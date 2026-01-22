@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from . import qr_views
+from . import voice_assistant
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -41,4 +42,8 @@ urlpatterns = [
     # Nearby clinics
     path("clinics/nearby/", views.nearby_clinics_page),
     path("api/nearby-clinics/", views.nearby_clinics),
+    
+    # Voice Assistant API
+    path('api/voice-assistant/', voice_assistant.voice_assistant_api, name='voice_assistant_api'),
+    path('api/voice-assistant/status/', voice_assistant.voice_assistant_status, name='voice_assistant_status'),
 ]

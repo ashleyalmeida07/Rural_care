@@ -75,6 +75,19 @@
                         </div>
                     </div>
 
+                    <!-- Tips for Better Results -->
+                    <div class="bg-amber-50 dark:bg-amber-900/30 rounded-xl p-4">
+                        <h4 class="font-medium text-amber-800 dark:text-amber-300 mb-2">
+                            <i class="fas fa-lightbulb mr-2"></i>Tips for Better Results
+                        </h4>
+                        <ul class="text-sm text-amber-700 dark:text-amber-400 space-y-1">
+                            <li><i class="fas fa-check mr-2 text-amber-500"></i>Use good lighting and avoid shadows</li>
+                            <li><i class="fas fa-check mr-2 text-amber-500"></i>Make sure the medicine name and dosage are clearly visible</li>
+                            <li><i class="fas fa-check mr-2 text-amber-500"></i>Capture the full medicine packaging or label</li>
+                            <li><i class="fas fa-check mr-2 text-amber-500"></i>Avoid blurry or tilted images</li>
+                        </ul>
+                    </div>
+
                     <!-- Submit Button -->
                     <button type="submit" id="submitBtn" class="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
                         <span id="submitText">
@@ -160,6 +173,10 @@
                             {% elif item.status == 'completed' %}
                             <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300 text-xs rounded-full">
                                 Partial
+                            </span>
+                            {% elif item.status == 'invalid_image' %}
+                            <span class="px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-300 text-xs rounded-full">
+                                Invalid Image
                             </span>
                             {% elif item.status == 'failed' %}
                             <span class="px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300 text-xs rounded-full">
