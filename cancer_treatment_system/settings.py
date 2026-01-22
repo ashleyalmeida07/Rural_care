@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'cancer_detection',
     'clinical_decision_support',
     'patient_portal',
+    'medicine_identifier',
 ]
 
 MIDDLEWARE = [
