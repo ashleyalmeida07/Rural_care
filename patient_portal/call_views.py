@@ -114,7 +114,7 @@ def end_call(request, consultation_id):
 
 @login_required
 def call_status(request, consultation_id):
-    """Get current call status"""
+    """Get current call status and signaling data"""
     consultation = get_object_or_404(
         Consultation,
         id=consultation_id
@@ -124,36 +124,83 @@ def call_status(request, consultation_id):
     if request.user not in [consultation.patient, consultation.doctor]:
         return JsonResponse({'error': 'Unauthorized'}, status=403)
     
+    # Determine if user is patient or doctor
+    is_patient = request.user == consultation.patient
+    
     return JsonResponse({
         'status': consultation.call_status,
         'mode': consultation.mode,
         'started_at': consultation.started_at.isoformat() if consultation.started_at else None,
+        # Include signaling data for peer connection
+        'offer': consultation.patient_offer if is_patient else consultation.patient_offer,
+        'answer': consultation.doctor_answer if not is_patient else consultation.doctor_answer,
+        'ice_candidates': consultation.doctor_ice_candidates if is_patient else consultation.patient_ice_candidates,
     })
-    if request.user not in [consultation.patient, consultation.doctor]:
-        return JsonResponse({'error': 'Unauthorized'}, status=403)
-    
-    consultation.call_status = 'ended'
-    consultation.completed_at = timezone.now()
-    consultation.status = 'completed'
-    consultation.save()
-    
-    return JsonResponse({'status': 'ended'})
 
 
 @login_required
-def call_status(request, consultation_id):
-    """Get current call status"""
+@require_POST
+def send_offer(request, consultation_id):
+    """Patient sends WebRTC offer"""
+    consultation = get_object_or_404(
+        Consultation,
+        id=consultation_id,
+        patient=request.user
+    )
+    
+    data = json.loads(request.body)
+    consultation.patient_offer = data.get('offer', '')
+    consultation.save()
+    
+    return JsonResponse({'status': 'success'})
+
+
+@login_required
+@require_POST
+def send_answer(request, consultation_id):
+    """Doctor sends WebRTC answer"""
+    consultation = get_object_or_404(
+        Consultation,
+        id=consultation_id,
+        doctor=request.user
+    )
+    
+    data = json.loads(request.body)
+    consultation.doctor_answer = data.get('answer', '')
+    consultation.save()
+    
+    return JsonResponse({'status': 'success'})
+
+
+@login_required
+@require_POST
+def send_ice_candidate(request, consultation_id):
+    """Send ICE candidate for peer connection"""
     consultation = get_object_or_404(
         Consultation,
         id=consultation_id
     )
     
-    # Check if user is part of this consultation
     if request.user not in [consultation.patient, consultation.doctor]:
         return JsonResponse({'error': 'Unauthorized'}, status=403)
     
-    return JsonResponse({
-        'status': consultation.call_status,
-        'mode': consultation.mode,
-        'started_at': consultation.started_at.isoformat() if consultation.started_at else None,
-    })
+    data = json.loads(request.body)
+    candidate = data.get('candidate', '')
+    
+    # Determine who is sending
+    is_patient = request.user == consultation.patient
+    
+    if is_patient:
+        # Append to patient candidates
+        candidates = json.loads(consultation.patient_ice_candidates or '[]')
+        candidates.append(candidate)
+        consultation.patient_ice_candidates = json.dumps(candidates)
+    else:
+        # Append to doctor candidates
+        candidates = json.loads(consultation.doctor_ice_candidates or '[]')
+        candidates.append(candidate)
+        consultation.doctor_ice_candidates = json.dumps(candidates)
+    
+    consultation.save()
+    
+    return JsonResponse({'status': 'success'})

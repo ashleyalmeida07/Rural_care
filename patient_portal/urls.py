@@ -47,6 +47,9 @@ urlpatterns = [
     path('call/<uuid:consultation_id>/join/', call_views.doctor_call_view, name='doctor_call_view'),
     path('call/<uuid:consultation_id>/status/', call_views.call_status, name='call_status'),
     path('call/<uuid:consultation_id>/end/', call_views.end_call, name='end_call'),
+    path('call/<uuid:consultation_id>/offer/', call_views.send_offer, name='send_offer'),
+    path('call/<uuid:consultation_id>/answer/', call_views.send_answer, name='send_answer'),
+    path('call/<uuid:consultation_id>/ice/', call_views.send_ice_candidate, name='send_ice_candidate'),
     
     # API Endpoints
     path('api/alerts/count/', views.api_unread_alerts_count, name='api_alerts_count'),

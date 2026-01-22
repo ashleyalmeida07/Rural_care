@@ -164,6 +164,12 @@ class Consultation(models.Model):
     )
     call_initiated_at = models.DateTimeField(null=True, blank=True)
     
+    # WebRTC Signaling data (for peer-to-peer connection)
+    patient_offer = models.TextField(blank=True, help_text="WebRTC offer from patient")
+    doctor_answer = models.TextField(blank=True, help_text="WebRTC answer from doctor")
+    patient_ice_candidates = models.TextField(blank=True, help_text="ICE candidates from patient (JSON)")
+    doctor_ice_candidates = models.TextField(blank=True, help_text="ICE candidates from doctor (JSON)")
+    
     # Consultation notes
     doctor_notes = models.TextField(blank=True, help_text="Doctor's consultation notes")
     prescription = models.TextField(blank=True, help_text="Prescription if any")
