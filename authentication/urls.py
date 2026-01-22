@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from . import qr_views
 from patient_portal import doctor_consultation_views
+from . import voice_assistant
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -50,6 +51,10 @@ urlpatterns = [
     path('blockchain/refresh-status/', qr_views.refresh_blockchain_status, name='refresh_blockchain_status'),
     
     # Nearby clinics
-    path("clinics/nearby/", views.nearby_clinics_page),
-    path("api/nearby-clinics/", views.nearby_clinics),
+    path("clinics/nearby/", views.nearby_clinics_page, name='nearby_clinics'),
+    path("api/nearby-clinics/", views.nearby_clinics, name='api_nearby_clinics'),
+    
+    # Voice Assistant API
+    path('api/voice-assistant/', voice_assistant.voice_assistant_api, name='voice_assistant_api'),
+    path('api/voice-assistant/status/', voice_assistant.voice_assistant_status, name='voice_assistant_status'),
 ]

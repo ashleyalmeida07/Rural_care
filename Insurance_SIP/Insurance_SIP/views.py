@@ -70,9 +70,18 @@ def scheme_detail(request, scheme_id):
     except Eligibility.DoesNotExist:
         eligibility = None
     
+    # Get user's existing application for this scheme if authenticated
+    user_application = None
+    if request.user.is_authenticated:
+        user_application = Application.objects.filter(
+            user=request.user,
+            scheme=scheme
+        ).order_by('-created_at').first()
+    
     context = {
         'scheme': scheme,
         'eligibility': eligibility,
+        'user_application': user_application,
     }
     return render(request, 'Insurance_SIP/scheme_detail.html', context)
 

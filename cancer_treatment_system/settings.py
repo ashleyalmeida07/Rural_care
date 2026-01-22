@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'clinical_decision_support',
     'patient_portal',
     'Insurance_SIP.Insurance_SIP',
+    'medicine_identifier',
 ]
 
 MIDDLEWARE = [

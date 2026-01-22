@@ -965,9 +965,9 @@ def nearby_clinics(request):
 
         if distance <= 2:  # 2 km radius
             clinics.append({
-                "name": clinic.clinic_name,
-                "address": clinic.clinic_address,
-                "phone": clinic.clinic_phone,
+                "name": clinic.full_name,
+                #"address": clinic.clinic_address,
+                "phone": clinic.mobile_number,
                 "lat": clinic.clinic_latitude,
                 "lng": clinic.clinic_longitude,
                 "distance": round(distance, 2)

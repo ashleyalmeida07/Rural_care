@@ -38,25 +38,34 @@ class DoctorKYCAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Personal Information', {
-            'fields': ('doctor', 'full_name', 'date_of_birth', 'gender')
+            'fields': ('doctor', 'full_name', 'date_of_birth', 'gender', 'nationality')
+        }),
+        ('Contact Information', {
+            'fields': ('personal_email', 'mobile_number', 'residential_address', 'city', 'state', 'postal_code', 'country')
+        }),
+        ('Clinic Information', {
+            'fields': ('clinic_address', 'clinic_latitude', 'clinic_longitude')
         }),
         ('Identification', {
-            'fields': ('id_type', 'id_number', 'id_document')
+            'fields': ('identity_document_type', 'identity_document_number', 'identity_document_file')
         }),
-        ('Medical Registration', {
-            'fields': ('registration_number', 'registration_council', 'registration_document')
+        ('Medical License', {
+            'fields': ('license_number_verified', 'license_issuing_authority', 'license_issue_date', 'license_expiry_date', 'license_document')
         }),
-        ('Qualifications', {
-            'fields': ('degree_document',)
+        ('Educational Qualification', {
+            'fields': ('medical_degree', 'medical_university', 'graduation_year', 'degree_certificate')
+        }),
+        ('Professional Information', {
+            'fields': ('current_hospital', 'designation', 'department_specialty', 'years_of_practice', 'employment_document')
         }),
         ('Address Proof', {
-            'fields': ('address_proof_type', 'address_proof_document')
+            'fields': ('address_proof_type', 'address_proof_file')
         }),
         ('Bank Details', {
             'fields': ('bank_account_holder', 'bank_account_number', 'bank_ifsc_code')
         }),
         ('KYC Status', {
-            'fields': ('status', 'verification_notes')
+            'fields': ('status', 'rejection_reason', 'verification_notes')
         }),
         ('Verification', {
             'fields': ('verified_at', 'verified_by', 'created_at', 'updated_at')
@@ -71,7 +80,7 @@ class DoctorKYCAdmin(admin.ModelAdmin):
         if form.cleaned_data.get('status') == 'approved' and obj.verified_at is None:
             from django.utils import timezone
             obj.verified_at = timezone.now()
-            obj.verified_by = request.user.get_full_name() or request.user.username
+            obj.verified_by = request.user
         super().save_model(request, obj, form, change)
 
 

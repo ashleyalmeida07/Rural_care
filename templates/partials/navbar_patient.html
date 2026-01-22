@@ -32,12 +32,22 @@
                     <i class="fas fa-clipboard-list mr-2"></i>Plans
                 </a>
 
+                <a href="{% url 'nearby_clinics' %}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-all px-3 py-2 rounded-lg hover:bg-accent/50">
+                    <i class="fas fa-hospital mr-2"></i>Clinics
+                </a>
+
                 <a href="/evidence/search/" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-all px-3 py-2 rounded-lg hover:bg-accent/50">
                     <i class="fas fa-lightbulb mr-2"></i>Evidence
                 </a>
 
                 <a href="{% url 'insurance:landing' %}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-all px-3 py-2 rounded-lg hover:bg-accent/50">
                     <i class="fas fa-shield-alt mr-2"></i>Insurance
+                </a>
+
+                <!-- Medicine Identifier - AI Powered -->
+                <a href="{% url 'medicine_identifier:upload' %}" class="text-sm font-medium text-muted-foreground hover:text-foreground transition-all px-3 py-2 rounded-lg hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 group">
+                    <i class="fas fa-pills mr-2 group-hover:animate-pulse"></i>Medicine ID
+                    <span class="ml-1 px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full">AI</span>
                 </a>
 
                 <!-- Quick Access Dropdown -->
@@ -123,6 +133,17 @@
                         <a href="{% url 'patient_portal:side_effects_list' %}" class="block px-4 py-2.5 text-sm text-foreground hover:bg-accent/80 transition-all flex items-center space-x-2">
                             <i class="fas fa-pills text-primary text-xs"></i>
                             <span>Side Effects</span>
+                        </a>
+                        <div class="border-t border-border/30 my-1"></div>
+                        <div class="px-4 py-2 text-xs text-muted-foreground font-semibold uppercase tracking-wide">AI Tools</div>
+                        <a href="{% url 'medicine_identifier:upload' %}" class="block px-4 py-2.5 text-sm text-foreground hover:bg-amber-500/10 transition-all flex items-center space-x-2">
+                            <i class="fas fa-capsules text-amber-500 text-xs"></i>
+                            <span>Identify Medicine</span>
+                            <span class="ml-auto px-1.5 py-0.5 text-[9px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full">NEW</span>
+                        </a>
+                        <a href="{% url 'medicine_identifier:history' %}" class="block px-4 py-2.5 text-sm text-foreground hover:bg-accent/80 transition-all flex items-center space-x-2">
+                            <i class="fas fa-history text-primary text-xs"></i>
+                            <span>Medicine History</span>
                         </a>
                         <div class="border-t border-border/30 my-1"></div>
                         <a href="{% url 'patient_portal:alerts_list' %}" class="block px-4 py-2.5 text-sm text-foreground hover:bg-accent/80 transition-all flex items-center space-x-2">
@@ -303,6 +324,16 @@
                     </a>
                     <a href="{% url 'cancer_detection:upload_genomic' %}" class="block px-4 py-2.5 text-sm text-foreground hover:bg-accent/80 rounded-lg transition-all">
                         <i class="fas fa-dna mr-2 text-primary"></i>Genomic Data
+                    </a>
+                </div>
+                <div class="border-t border-border/50 pt-2 mt-2">
+                    <p class="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">AI Tools</p>
+                    <a href="{% url 'medicine_identifier:upload' %}" class="block px-4 py-2.5 text-sm text-foreground hover:bg-amber-500/10 rounded-lg transition-all flex items-center">
+                        <i class="fas fa-pills mr-2 text-amber-500"></i>Identify Medicine
+                        <span class="ml-auto px-1.5 py-0.5 text-[9px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full">AI</span>
+                    </a>
+                    <a href="{% url 'medicine_identifier:history' %}" class="block px-4 py-2.5 text-sm text-foreground hover:bg-accent/80 rounded-lg transition-all">
+                        <i class="fas fa-history mr-2 text-primary"></i>Medicine History
                     </a>
                 </div>
             </div>

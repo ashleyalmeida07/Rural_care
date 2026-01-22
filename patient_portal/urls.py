@@ -65,4 +65,6 @@ urlpatterns = [
     path('api/alerts/count/', views.api_unread_alerts_count, name='api_alerts_count'),
     path('api/symptoms/trend/', views.api_symptom_trend, name='api_symptom_trend'),
     path('api/incoming-calls/', call_views.check_incoming_calls, name='api_incoming_calls'),
+    path('api/badges/check/', views.api_check_new_badges, name='api_check_badges'),
+    path('api/stats/', views.api_user_stats, name='api_user_stats'),
 ]
