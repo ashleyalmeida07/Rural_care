@@ -125,12 +125,30 @@
                             <i class="fas fa-bell text-primary text-xs"></i>
                             <span>Alerts & Reminders</span>
                         </a>
+                        <div class="border-t border-border/30 my-1"></div>
+                        <a href="{% url 'patient_portal:available_doctors' %}" class="block px-4 py-2.5 text-sm text-foreground hover:bg-accent/80 transition-all flex items-center space-x-2">
+                            <i class="fas fa-user-md text-primary text-xs"></i>
+                            <span>Book Consultation</span>
+                        </a>
+                        <a href="{% url 'patient_portal:my_consultations' %}" class="block px-4 py-2.5 text-sm text-foreground hover:bg-accent/80 transition-all flex items-center space-x-2">
+                            <i class="fas fa-calendar-check text-primary text-xs"></i>
+                            <span>My Consultations</span>
+                        </a>
                     </div>
                 </div>
             </div>
 
             <!-- Right Section: Theme Toggle & Profile -->
             <div class="flex items-center space-x-3">
+                <!-- Notification Icon -->
+                <a href="{% url 'patient_portal:alerts_list' %}" class="relative h-10 w-10 rounded-lg border border-border hover:bg-accent/80 hover:border-primary/50 flex items-center justify-center transition-all duration-300 hover:scale-110 group">
+                    <i class="fas fa-bell text-foreground group-hover:text-primary transition-all"></i>
+                    <!-- Red Dot for Unread Notifications -->
+                    <span id="notificationBadge" class="hidden absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center ring-2 ring-card animate-pulse">
+                        <span id="notificationCount">0</span>
+                    </span>
+                </a>
+                
                 <!-- Theme Toggle -->
                 <button onclick="toggleTheme()" class="hidden sm:flex h-10 w-10 rounded-lg border border-border hover:bg-accent/80 hover:border-primary/50 items-center justify-center transition-all duration-300 hover:scale-110">
                     <i class="fas fa-sun text-foreground dark:hidden"></i>
@@ -329,4 +347,30 @@ document.addEventListener('click', function(event) {
         patientDropdown.classList.add('hidden');
     }
 });
+
+// Update notification count
+function updateNotificationCount() {
+    fetch('{% url "patient_portal:api_alerts_count" %}')
+        .then(response => response.json())
+        .then(data => {
+            const count = data.count || 0;
+            const badge = document.getElementById('notificationBadge');
+            const countEl = document.getElementById('notificationCount');
+            
+            if (count > 0) {
+                badge.classList.remove('hidden');
+                countEl.textContent = count > 99 ? '99+' : count;
+            } else {
+                badge.classList.add('hidden');
+            }
+        })
+        .catch(error => console.error('Error fetching notification count:', error));
+}
+
+// Update count on page load and every 30 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    updateNotificationCount();
+    setInterval(updateNotificationCount, 30000);
+});
 </script>
+

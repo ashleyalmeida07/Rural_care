@@ -217,6 +217,7 @@ class DoctorProfile(models.Model):
     
     # Work Information
     hospital_affiliation = models.CharField(max_length=200, null=True, blank=True)
+    hospital_phone = models.CharField(max_length=20, null=True, blank=True, help_text="Hospital contact number")
     department = models.CharField(max_length=100, null=True, blank=True)
     
     # Location Information

@@ -69,18 +69,14 @@
                 <div class="flex items-start p-5">
                     <!-- Icon -->
                     <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4 flex-shrink-0
-                        {% if alert.alert_type == 'alert' %}
-                            {% if alert.priority == 'high' %}bg-red-100 dark:bg-red-900/30
-                            {% elif alert.priority == 'medium' %}bg-amber-100 dark:bg-amber-900/30
-                            {% else %}bg-blue-100 dark:bg-blue-900/30{% endif %}
-                        {% elif alert.alert_type == 'reminder' %}bg-purple-100 dark:bg-purple-900/30
+                        {% if alert.alert_type == 'appointment' or alert.alert_type == 'medication' %}
+                            {% if alert.is_urgent %}bg-red-100 dark:bg-red-900/30
+                            {% else %}bg-amber-100 dark:bg-amber-900/30{% endif %}
+                        {% elif alert.alert_type == 'symptom_reminder' %}bg-purple-100 dark:bg-purple-900/30
                         {% else %}bg-gray-100 dark:bg-gray-800{% endif %}">
-                        {% if alert.alert_type == 'alert' %}
-                            <i class="fas fa-exclamation-circle
-                                {% if alert.priority == 'high' %}text-red-600
-                                {% elif alert.priority == 'medium' %}text-amber-600
-                                {% else %}text-blue-600{% endif %}"></i>
-                        {% elif alert.alert_type == 'reminder' %}
+                        {% if alert.is_urgent %}
+                            <i class="fas fa-exclamation-circle text-red-600"></i>
+                        {% elif alert.alert_type == 'symptom_reminder' %}
                             <i class="fas fa-bell text-purple-600"></i>
                         {% else %}
                             <i class="fas fa-info-circle text-gray-600"></i>
@@ -101,13 +97,12 @@
                         
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-2">
-                                <!-- Priority Badge -->
-                                <span class="px-2 py-1 rounded text-xs font-medium
-                                    {% if alert.priority == 'high' %}bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400
-                                    {% elif alert.priority == 'medium' %}bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400
-                                    {% else %}bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400{% endif %}">
-                                    {{ alert.get_priority_display }}
+                                <!-- Urgent Badge -->
+                                {% if alert.is_urgent %}
+                                <span class="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                    Urgent
                                 </span>
+                                {% endif %}
                                 <!-- Type Badge -->
                                 <span class="px-2 py-1 bg-accent rounded text-xs text-muted-foreground">
                                     {{ alert.get_alert_type_display }}
@@ -115,7 +110,7 @@
                             </div>
                             
                             {% if not alert.is_read %}
-                            <form method="post" action="{% url 'patient_portal:alert_mark_read' alert.id %}">
+                            <form method="post" action="{% url 'patient_portal:mark_alert_read' alert.id %}" class="mark-read-form" data-alert-id="{{ alert.id }}">
                                 {% csrf_token %}
                                 <button type="submit" class="text-primary hover:underline text-sm">
                                     Mark as read
@@ -174,4 +169,75 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+// Handle mark as read with AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.mark-read-form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const url = this.action;
+            
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the form and update styling
+                    this.remove();
+                    const alertDiv = this.closest('.bg-card');
+                    alertDiv.classList.remove('border-primary/50');
+                    alertDiv.classList.add('border-border/50');
+                    
+                    // Update unread count
+                    const unreadCount = document.querySelector('.bg-primary\\/10');
+                    if (unreadCount) {
+                        location.reload();
+                    }
+                    
+                    // Update notification badge in navbar if exists
+                    if (typeof updateNotificationCount === 'function') {
+                        updateNotificationCount();
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+    
+    // Handle mark all as read
+    const markAllForm = document.querySelector('form[action*="mark-all-read"]');
+    if (markAllForm) {
+        markAllForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                // Fallback to normal form submission
+                this.submit();
+            });
+        });
+    }
+});
+</script>
 {% endblock %}

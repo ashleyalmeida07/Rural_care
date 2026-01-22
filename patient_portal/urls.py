@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from . import consultation_views
+from . import call_views
 
 app_name = 'patient_portal'
 
@@ -31,7 +33,23 @@ urlpatterns = [
     # Notification Preferences
     path('notifications/', views.notification_preferences, name='notification_preferences'),
     
+    # Consultations
+    path('consultations/doctors/', consultation_views.available_doctors, name='available_doctors'),
+    path('consultations/doctor/<uuid:doctor_id>/', consultation_views.doctor_profile_view, name='doctor_profile_view'),
+    path('consultations/request/<uuid:doctor_id>/', consultation_views.request_consultation, name='request_consultation'),
+    path('consultations/requests/', consultation_views.consultation_requests, name='consultation_requests'),
+    path('consultations/accept/<uuid:request_id>/', consultation_views.accept_suggested_time, name='accept_suggested_time'),
+    path('consultations/my/', consultation_views.my_consultations, name='my_consultations'),
+    path('consultations/cancel/<uuid:consultation_id>/', consultation_views.cancel_consultation, name='cancel_consultation'),
+    
+    # Call functionality
+    path('call/<uuid:consultation_id>/start/', call_views.initiate_call, name='initiate_call'),
+    path('call/<uuid:consultation_id>/join/', call_views.doctor_call_view, name='doctor_call_view'),
+    path('call/<uuid:consultation_id>/status/', call_views.call_status, name='call_status'),
+    path('call/<uuid:consultation_id>/end/', call_views.end_call, name='end_call'),
+    
     # API Endpoints
     path('api/alerts/count/', views.api_unread_alerts_count, name='api_alerts_count'),
     path('api/symptoms/trend/', views.api_symptom_trend, name='api_symptom_trend'),
+    path('api/incoming-calls/', call_views.check_incoming_calls, name='api_incoming_calls'),
 ]

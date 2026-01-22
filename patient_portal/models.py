@@ -314,6 +314,11 @@ class PatientAlert(models.Model):
         self.status = 'read'
         self.read_at = timezone.now()
         self.save()
+    
+    @property
+    def is_read(self):
+        """Property to check if alert is read"""
+        return self.status == 'read'
 
 
 class PatientNotificationPreference(models.Model):
@@ -353,3 +358,7 @@ class PatientNotificationPreference(models.Model):
     
     def __str__(self):
         return f"Preferences: {self.patient.username}"
+
+
+# Import consultation models
+from .consultation_models import DoctorAvailability, ConsultationRequest, Consultation

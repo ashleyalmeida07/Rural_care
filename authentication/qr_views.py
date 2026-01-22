@@ -230,6 +230,26 @@ def scan_qr_code(request):
             access_granted=True
         )
         
+        # Create notification for patient
+        from patient_portal.models import PatientAlert
+        doctor_name = f"Dr. {request.user.first_name} {request.user.last_name}" if request.user.first_name else f"Dr. {request.user.username}"
+        PatientAlert.objects.create(
+            patient=patient,
+            alert_type='general',
+            title='Your QR Code Was Scanned',
+            message=f'{doctor_name} has accessed your medical records via QR code scan at {timezone.now().strftime("%I:%M %p on %B %d, %Y")}.',
+            channel='in_app',
+            status='sent',
+            sent_at=timezone.now(),
+            is_urgent=False,
+            metadata={
+                'doctor_id': str(request.user.id),
+                'doctor_name': doctor_name,
+                'scan_type': 'qr_code',
+                'qr_code_id': str(qr_code.id)
+            }
+        )
+        
         # Retrieve patient data
         patient_data = get_patient_medical_profile(patient)
         

@@ -725,6 +725,7 @@ def alerts_list(request):
     
     context = {
         'page_obj': page_obj,
+        'alerts': page_obj,  # For template compatibility
         'unread_count': unread_count,
         'selected_status': status,
         'unread_only': unread_only,
@@ -753,6 +754,11 @@ def mark_all_alerts_read(request):
         status='read',
         read_at=timezone.now()
     )
+    
+    # Check if it's an AJAX request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True, 'message': 'All alerts marked as read.'})
+    
     messages.success(request, 'All alerts marked as read.')
     return redirect('patient_portal:alerts_list')
 

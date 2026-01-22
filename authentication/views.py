@@ -236,9 +236,38 @@ def doctor_dashboard(request):
     except DoctorKYC.DoesNotExist:
         kyc = None
     
+    # Get recent consultation requests (last 10)
+    from patient_portal.consultation_models import ConsultationRequest, Consultation
+    from django.utils import timezone
+    from datetime import datetime
+    
+    recent_requests = ConsultationRequest.objects.filter(
+        doctor=request.user
+    ).select_related('patient', 'patient__patient_profile').order_by('-requested_at')[:10]
+    
+    # Get today's scheduled consultations
+    today = timezone.now().date()
+    todays_consultations = Consultation.objects.filter(
+        doctor=request.user,
+        scheduled_datetime__date=today
+    ).select_related('patient', 'patient__patient_profile').order_by('scheduled_datetime')
+    
+    # Count stats
+    total_requests = ConsultationRequest.objects.filter(doctor=request.user).count()
+    pending_requests = ConsultationRequest.objects.filter(
+        doctor=request.user,
+        status='pending'
+    ).count()
+    todays_count = todays_consultations.count()
+    
     context = {
         'kyc': kyc,
-        'doctor_profile': doctor_profile
+        'doctor_profile': doctor_profile,
+        'recent_requests': recent_requests,
+        'todays_consultations': todays_consultations,
+        'total_requests': total_requests,
+        'pending_requests': pending_requests,
+        'todays_count': todays_count,
     }
     
     return render(request, 'authentication/doctor_dashboard.html', context)
