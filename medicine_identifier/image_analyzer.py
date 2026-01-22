@@ -4,13 +4,34 @@ Performs image preprocessing, text extraction (OCR), color analysis, and shape d
 Optimized for medicine packaging, tablets, syrups, and other pharmaceutical products
 """
 
-import cv2
-import numpy as np
-from PIL import Image, ImageEnhance, ImageFilter
 import os
 import re
 from typing import Dict, List, Tuple, Optional
 import tempfile
+
+# Graceful imports for optional dependencies
+try:
+    import cv2
+    CV2_AVAILABLE = True
+except ImportError:
+    CV2_AVAILABLE = False
+    cv2 = None
+
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+    np = None
+
+try:
+    from PIL import Image, ImageEnhance, ImageFilter
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+    Image = None
+    ImageEnhance = None
+    ImageFilter = None
 
 
 class MedicineImageAnalyzer:
@@ -145,18 +166,29 @@ class MedicineImageAnalyzer:
             'ocr_confidence': 0.0,
             'processing_successful': False,
             'errors': [],
-            'ocr_method_used': ''
+            'ocr_method_used': '',
+            'is_valid_medicine_image': True,
+            'medicine_confidence_score': 0.5,
+            'validation_reason': '',
+            'validation_suggestions': []
         }
+        
+        # Check if required dependencies are available
+        if not CV2_AVAILABLE or not NUMPY_AVAILABLE:
+            results['errors'].append("OpenCV or NumPy not available")
+            results['validation_reason'] = "Image analysis dependencies not available"
+            return results
         
         try:
             # Load image with OpenCV
             image = cv2.imread(image_path)
             if image is None:
                 # Try with PIL as fallback
-                try:
-                    pil_image = Image.open(image_path)
-                    image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
-                except:
+                if PIL_AVAILABLE and Image is not None:
+                    try:
+                        pil_image = Image.open(image_path)
+                        image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+                    except:
                     results['errors'].append("Failed to load image")
                     return results
             

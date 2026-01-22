@@ -254,6 +254,9 @@ RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', '')
 AGORA_APP_ID = os.getenv('AGORA_APP_ID', '')
 AGORA_APP_CERTIFICATE = os.getenv('AGORA_APP_CERTIFICATE', '')
 
+# ML Features Configuration (disable on low-memory environments like Render free tier)
+ML_FEATURES_ENABLED = os.getenv('ML_FEATURES_ENABLED', 'True').lower() == 'true'
+
 # Production security settings
 if not DEBUG:
     # HTTPS settings

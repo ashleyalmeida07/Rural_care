@@ -17,11 +17,31 @@ import os
 import json
 import tempfile
 import time
-import numpy as np
+
+# Graceful numpy import
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+    np = None
 
 from .models import MedicineIdentification, MedicineDatabase
-from .image_analyzer import MedicineImageAnalyzer
 from .groq_medicine_service import GroqMedicineIdentifier
+
+# Lazy import for image analyzer (has heavy dependencies)
+_image_analyzer = None
+
+def get_image_analyzer():
+    """Lazy load image analyzer to avoid startup delays"""
+    global _image_analyzer
+    if _image_analyzer is None:
+        try:
+            from .image_analyzer import MedicineImageAnalyzer
+            _image_analyzer = MedicineImageAnalyzer()
+        except ImportError:
+            _image_analyzer = None
+    return _image_analyzer
 
 
 def patient_required(view_func):
@@ -44,16 +64,16 @@ def convert_to_json_serializable(obj):
         return {k: convert_to_json_serializable(v) for k, v in obj.items()}
     elif isinstance(obj, list):
         return [convert_to_json_serializable(item) for item in obj]
-    elif isinstance(obj, (np.bool_, )):
-        return bool(obj)
-    elif isinstance(obj, (np.integer, )):
-        return int(obj)
-    elif isinstance(obj, (np.floating, )):
-        return float(obj)
-    elif isinstance(obj, np.ndarray):
-        return obj.tolist()
-    else:
-        return obj
+    elif NUMPY_AVAILABLE and np is not None:
+        if isinstance(obj, (np.bool_, )):
+            return bool(obj)
+        elif isinstance(obj, (np.integer, )):
+            return int(obj)
+        elif isinstance(obj, (np.floating, )):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+    return obj
 
 
 @patient_required
@@ -112,8 +132,22 @@ def upload_medicine_image(request):
                     image_path = tmp_file.name
             
             # Step 1: OpenCV + OCR Analysis
-            image_analyzer = MedicineImageAnalyzer()
-            analysis_results = image_analyzer.analyze_image(image_path)
+            image_analyzer = get_image_analyzer()
+            if image_analyzer:
+                analysis_results = image_analyzer.analyze_image(image_path)
+            else:
+                # Fallback when image analyzer is not available
+                analysis_results = {
+                    'extracted_text': '',
+                    'ocr_confidence': 0.0,
+                    'visual_analysis': {},
+                    'is_valid_medicine_image': True,
+                    'medicine_confidence_score': 0.5,
+                    'validation_reason': 'Image analysis not available',
+                    'validation_suggestions': [],
+                    'detected_medicine_info': {},
+                    'cleaned_text': ''
+                }
             
             # Convert numpy types to Python native types for JSON serialization
             analysis_results = convert_to_json_serializable(analysis_results)
@@ -435,8 +469,21 @@ def api_identify_medicine(request):
                 image_path = tmp_file.name
         
         # Analyze
-        image_analyzer = MedicineImageAnalyzer()
-        analysis_results = image_analyzer.analyze_image(image_path)
+        image_analyzer = get_image_analyzer()
+        if image_analyzer:
+            analysis_results = image_analyzer.analyze_image(image_path)
+        else:
+            analysis_results = {
+                'extracted_text': '',
+                'ocr_confidence': 0.0,
+                'visual_analysis': {},
+                'is_valid_medicine_image': True,
+                'medicine_confidence_score': 0.5,
+                'validation_reason': 'Image analysis not available',
+                'validation_suggestions': [],
+                'detected_medicine_info': {},
+                'cleaned_text': ''
+            }
         
         # Convert numpy types
         analysis_results = convert_to_json_serializable(analysis_results)

@@ -1,9 +1,75 @@
 from django.urls import path
 from . import views
-from . import evidence_views
-from . import evidence_web_views
 
 app_name = 'cancer_detection'
+
+# Lazy import wrappers for evidence views (heavy ML dependencies)
+def _get_evidence_views():
+    from . import evidence_views
+    return evidence_views
+
+def _get_evidence_web_views():
+    from . import evidence_web_views
+    return evidence_web_views
+
+# Lazy view wrappers for evidence_views
+def lazy_explain_recommendation(request, treatment_plan_id, rec_evidence_id=None):
+    return _get_evidence_views().explain_recommendation(request, treatment_plan_id, rec_evidence_id)
+
+def lazy_get_recommendation_with_evidence(request, treatment_plan_id):
+    return _get_evidence_views().get_recommendation_with_evidence(request, treatment_plan_id)
+
+def lazy_get_evidence_source_detail(request, evidence_id):
+    return _get_evidence_views().get_evidence_source_detail(request, evidence_id)
+
+def lazy_log_explanation_feedback(request, treatment_plan_id, rec_evidence_id):
+    return _get_evidence_views().log_explanation_feedback(request, treatment_plan_id, rec_evidence_id)
+
+def lazy_search_evidence(request):
+    return _get_evidence_views().search_evidence(request)
+
+def lazy_create_rule_based_reference(request):
+    return _get_evidence_views().create_rule_based_reference(request)
+
+def lazy_get_patient_decision_factors(request, treatment_plan_id, rec_evidence_id):
+    return _get_evidence_views().get_patient_decision_factors(request, treatment_plan_id, rec_evidence_id)
+
+def lazy_initialize_evidence_database(request):
+    return _get_evidence_views().initialize_evidence_database(request)
+
+def lazy_search_and_ingest_studies(request):
+    return _get_evidence_views().search_and_ingest_studies(request)
+
+def lazy_get_explanation_history(request, treatment_plan_id):
+    return _get_evidence_views().get_explanation_history(request, treatment_plan_id)
+
+# Lazy view wrappers for evidence_web_views
+def lazy_treatment_plan_with_evidence(request, plan_id):
+    return _get_evidence_web_views().treatment_plan_with_evidence(request, plan_id)
+
+def lazy_evidence_explanation_detail(request, plan_id, rec_evidence_id):
+    return _get_evidence_web_views().evidence_explanation_detail(request, plan_id, rec_evidence_id)
+
+def lazy_decision_factors_breakdown(request, plan_id, rec_evidence_id):
+    return _get_evidence_web_views().decision_factors_breakdown(request, plan_id, rec_evidence_id)
+
+def lazy_evidence_statistics(request, plan_id):
+    return _get_evidence_web_views().evidence_statistics(request, plan_id)
+
+def lazy_evidence_audit_trail(request, plan_id):
+    return _get_evidence_web_views().evidence_audit_trail(request, plan_id)
+
+def lazy_submit_explanation_feedback(request, plan_id, rec_evidence_id):
+    return _get_evidence_web_views().submit_explanation_feedback(request, plan_id, rec_evidence_id)
+
+def lazy_evidence_search(request):
+    return _get_evidence_web_views().evidence_search(request)
+
+def lazy_evidence_source_detail(request, source_id):
+    return _get_evidence_web_views().evidence_source_detail(request, source_id)
+
+def lazy_rule_based_references_view(request):
+    return _get_evidence_web_views().rule_based_references_view(request)
 
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
@@ -31,28 +97,28 @@ urlpatterns = [
     path('treatment-plans/<uuid:plan_id>/visualize/', views.visualize_treatment_pathway, name='visualize_pathway'),
     path('treatment-plans/<uuid:plan_id>/decision-support/', views.decision_support, name='decision_support'),
     
-    # Evidence Traceability Engine - API Endpoints
-    path('api/evidence/explain/<uuid:treatment_plan_id>/', evidence_views.explain_recommendation, name='explain_recommendation'),
-    path('api/evidence/explain/<uuid:treatment_plan_id>/<uuid:rec_evidence_id>/', evidence_views.explain_recommendation, name='explain_specific_recommendation'),
-    path('api/evidence/recommendations/<uuid:treatment_plan_id>/', evidence_views.get_recommendation_with_evidence, name='get_recommendations_with_evidence'),
-    path('api/evidence/source/<uuid:evidence_id>/', evidence_views.get_evidence_source_detail, name='get_evidence_detail'),
-    path('api/evidence/feedback/<uuid:treatment_plan_id>/<uuid:rec_evidence_id>/', evidence_views.log_explanation_feedback, name='log_feedback'),
-    path('api/evidence/search/', evidence_views.search_evidence, name='search_evidence'),
-    path('api/evidence/rule-reference/', evidence_views.create_rule_based_reference, name='create_rule_reference'),
-    path('api/evidence/decision-factors/<uuid:treatment_plan_id>/<uuid:rec_evidence_id>/', evidence_views.get_patient_decision_factors, name='decision_factors'),
-    path('api/evidence/init/', evidence_views.initialize_evidence_database, name='init_evidence'),
-    path('api/evidence/ingest-studies/', evidence_views.search_and_ingest_studies, name='ingest_studies'),
-    path('api/evidence/history/<uuid:treatment_plan_id>/', evidence_views.get_explanation_history, name='explanation_history'),
+    # Evidence Traceability Engine - API Endpoints (lazy loaded)
+    path('api/evidence/explain/<uuid:treatment_plan_id>/', lazy_explain_recommendation, name='explain_recommendation'),
+    path('api/evidence/explain/<uuid:treatment_plan_id>/<uuid:rec_evidence_id>/', lazy_explain_recommendation, name='explain_specific_recommendation'),
+    path('api/evidence/recommendations/<uuid:treatment_plan_id>/', lazy_get_recommendation_with_evidence, name='get_recommendations_with_evidence'),
+    path('api/evidence/source/<uuid:evidence_id>/', lazy_get_evidence_source_detail, name='get_evidence_detail'),
+    path('api/evidence/feedback/<uuid:treatment_plan_id>/<uuid:rec_evidence_id>/', lazy_log_explanation_feedback, name='log_feedback'),
+    path('api/evidence/search/', lazy_search_evidence, name='search_evidence'),
+    path('api/evidence/rule-reference/', lazy_create_rule_based_reference, name='create_rule_reference'),
+    path('api/evidence/decision-factors/<uuid:treatment_plan_id>/<uuid:rec_evidence_id>/', lazy_get_patient_decision_factors, name='decision_factors'),
+    path('api/evidence/init/', lazy_initialize_evidence_database, name='init_evidence'),
+    path('api/evidence/ingest-studies/', lazy_search_and_ingest_studies, name='ingest_studies'),
+    path('api/evidence/history/<uuid:treatment_plan_id>/', lazy_get_explanation_history, name='explanation_history'),
     
-    # Evidence Traceability Engine - HTML Views (Web UI)
-    path('treatment-plans/<uuid:plan_id>/evidence/', evidence_web_views.treatment_plan_with_evidence, name='treatment_plan_with_evidence'),
-    path('treatment-plans/<uuid:plan_id>/evidence/explain/<uuid:rec_evidence_id>/', evidence_web_views.evidence_explanation_detail, name='evidence_explanation_detail'),
-    path('treatment-plans/<uuid:plan_id>/evidence/factors/<uuid:rec_evidence_id>/', evidence_web_views.decision_factors_breakdown, name='decision_factors_breakdown'),
-    path('treatment-plans/<uuid:plan_id>/evidence/statistics/', evidence_web_views.evidence_statistics, name='evidence_statistics'),
-    path('treatment-plans/<uuid:plan_id>/evidence/audit/', evidence_web_views.evidence_audit_trail, name='evidence_audit_trail'),
-    path('treatment-plans/<uuid:plan_id>/evidence/feedback/<uuid:rec_evidence_id>/', evidence_web_views.submit_explanation_feedback, name='submit_explanation_feedback'),
-    path('evidence/search/', evidence_web_views.evidence_search, name='evidence_search'),
-    path('evidence/source/<uuid:source_id>/', evidence_web_views.evidence_source_detail, name='evidence_source_detail'),
-    path('evidence/rules/', evidence_web_views.rule_based_references_view, name='rule_based_references_view'),
+    # Evidence Traceability Engine - HTML Views (Web UI) (lazy loaded)
+    path('treatment-plans/<uuid:plan_id>/evidence/', lazy_treatment_plan_with_evidence, name='treatment_plan_with_evidence'),
+    path('treatment-plans/<uuid:plan_id>/evidence/explain/<uuid:rec_evidence_id>/', lazy_evidence_explanation_detail, name='evidence_explanation_detail'),
+    path('treatment-plans/<uuid:plan_id>/evidence/factors/<uuid:rec_evidence_id>/', lazy_decision_factors_breakdown, name='decision_factors_breakdown'),
+    path('treatment-plans/<uuid:plan_id>/evidence/statistics/', lazy_evidence_statistics, name='evidence_statistics'),
+    path('treatment-plans/<uuid:plan_id>/evidence/audit/', lazy_evidence_audit_trail, name='evidence_audit_trail'),
+    path('treatment-plans/<uuid:plan_id>/evidence/feedback/<uuid:rec_evidence_id>/', lazy_submit_explanation_feedback, name='submit_explanation_feedback'),
+    path('evidence/search/', lazy_evidence_search, name='evidence_search'),
+    path('evidence/source/<uuid:source_id>/', lazy_evidence_source_detail, name='evidence_source_detail'),
+    path('evidence/rules/', lazy_rule_based_references_view, name='rule_based_references_view'),
 
 ]

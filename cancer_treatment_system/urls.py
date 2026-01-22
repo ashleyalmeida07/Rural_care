@@ -21,7 +21,19 @@ from django.conf.urls.static import static
 from django.http import HttpResponse, Http404
 from django.views.static import serve
 import os
-from cancer_detection import evidence_web_views
+
+# Lazy import wrapper for evidence_web_views to avoid loading heavy ML libraries at startup
+def lazy_evidence_search(request):
+    from cancer_detection import evidence_web_views
+    return evidence_web_views.evidence_search(request)
+
+def lazy_evidence_source_detail(request, source_id):
+    from cancer_detection import evidence_web_views
+    return evidence_web_views.evidence_source_detail(request, source_id)
+
+def lazy_rule_based_references_view(request):
+    from cancer_detection import evidence_web_views
+    return evidence_web_views.rule_based_references_view(request)
 
 
 def serve_media(request, path):
@@ -48,10 +60,10 @@ urlpatterns = [
     path('insurance/', include('Insurance_SIP.Insurance_SIP.urls')),
     path('medicine/', include('medicine_identifier.urls')),
     
-    # Evidence Traceability Engine - Root level HTML views
-    path('evidence/search/', evidence_web_views.evidence_search, name='evidence_search'),
-    path('evidence/source/<uuid:source_id>/', evidence_web_views.evidence_source_detail, name='evidence_source_detail'),
-    path('evidence/rules/', evidence_web_views.rule_based_references_view, name='rule_based_references_view'),
+    # Evidence Traceability Engine - Root level HTML views (lazy loaded)
+    path('evidence/search/', lazy_evidence_search, name='evidence_search'),
+    path('evidence/source/<uuid:source_id>/', lazy_evidence_source_detail, name='evidence_source_detail'),
+    path('evidence/rules/', lazy_rule_based_references_view, name='rule_based_references_view'),
 ]
 
 # Serve media files - custom handler to serve local files

@@ -3,12 +3,31 @@ Document Validator using OCR (OpenCV + pytesseract alternative)
 Validates uploaded documents for insurance applications
 Uses pattern matching and basic OCR for validation
 """
-import cv2
-import numpy as np
-from PIL import Image
 import re
 import io
 import os
+
+# Graceful imports for optional dependencies
+try:
+    import cv2
+    CV2_AVAILABLE = True
+except ImportError:
+    CV2_AVAILABLE = False
+    cv2 = None
+
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+    np = None
+
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+    Image = None
 
 
 class DocumentValidator:
@@ -17,6 +36,8 @@ class DocumentValidator:
     def __init__(self):
         # Use lazy initialization - OCR reader will be initialized when needed
         self._reader = None
+        self.cv2_available = CV2_AVAILABLE
+        self.pil_available = PIL_AVAILABLE
     
     @property
     def reader(self):
@@ -32,6 +53,9 @@ class DocumentValidator:
     
     def preprocess_image(self, image_file):
         """Preprocess image for better OCR results"""
+        if not CV2_AVAILABLE or not NUMPY_AVAILABLE or not PIL_AVAILABLE:
+            return None
+            
         try:
             # Check if it's a PDF
             file_name = getattr(image_file, 'name', '').lower()
