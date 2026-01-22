@@ -238,4 +238,159 @@
         </div>
     </div>
 </div>
+
+<!-- Incoming Call Corner Notification -->
+<div id="incomingCallNotification" class="fixed bottom-6 right-6 z-50 hidden transform transition-all duration-300 ease-out">
+    <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-2xl max-w-sm animate-bounce-subtle">
+        <div class="p-6 text-white">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white/20 rounded-full p-3 animate-pulse">
+                        <i class="fas fa-phone-alt text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 id="callerName" class="text-lg font-bold text-white">Incoming Call</h3>
+                        <p id="callType" class="text-sm text-white/90">Video Call</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex space-x-3">
+                <button onclick="answerCall()" 
+                        class="flex-1 bg-white text-green-600 px-4 py-3 rounded-xl font-bold hover:bg-green-50 transition-all hover:scale-105 flex items-center justify-center gap-2">
+                    <i class="fas fa-check"></i>
+                    <span>Answer</span>
+                </button>
+                <button onclick="dismissCallNotification()" 
+                        class="flex-1 bg-red-500 text-white px-4 py-3 rounded-xl font-bold hover:bg-red-600 transition-all hover:scale-105 flex items-center justify-center gap-2">
+                    <i class="fas fa-times"></i>
+                    <span>Dismiss</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Audio element for ringtone -->
+<audio id="ringtone" loop>
+    <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+</audio>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentCallId = null;
+const ringtone = document.getElementById('ringtone');
+const callNotification = document.getElementById('incomingCallNotification');
+let autoHideTimeout = null;
+
+// Check for incoming calls every 1 second
+setInterval(checkIncomingCalls, 1000);
+
+// Also check immediately on page load
+checkIncomingCalls();
+
+function checkIncomingCalls() {
+    fetch('/portal/api/incoming-calls/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.calls && data.calls.length > 0) {
+                const call = data.calls[0];
+                showIncomingCallNotification(call);
+            } else {
+                // No incoming calls - dismiss notification if showing
+                if (currentCallId && !callNotification.classList.contains('hidden')) {
+                    dismissCallNotification();
+                }
+            }
+        })
+        .catch(error => console.error('Error checking calls:', error));
+}
+
+function showIncomingCallNotification(call) {
+    // If already showing this call, don't show again
+    if (currentCallId === call.id) return;
+    
+    currentCallId = call.id;
+    document.getElementById('callerName').textContent = call.patient_name;
+    document.getElementById('callType').textContent = call.mode === 'video' ? '📹 Video Call' : '📞 Phone Call';
+    
+    // Show notification with animation
+    callNotification.classList.remove('hidden');
+    callNotification.querySelector('div').classList.remove('animate-slide-out-right');
+    callNotification.querySelector('div').classList.add('animate-slide-in-right');
+    
+    // Play ringtone
+    ringtone.play().catch(e => console.log('Could not play ringtone:', e));
+    
+    // Clear any existing auto-hide timeout
+    if (autoHideTimeout) {
+        clearTimeout(autoHideTimeout);
+    }
+}
+
+function answerCall() {
+    if (currentCallId) {
+        ringtone.pause();
+        ringtone.currentTime = 0;
+        window.location.href = `/portal/call/${currentCallId}/join/`;
+    }
+}
+
+function dismissCallNotification() {
+    callNotification.querySelector('div').classList.add('animate-slide-out-right');
+    ringtone.pause();
+    ringtone.currentTime = 0;
+    
+    setTimeout(() => {
+        callNotification.classList.add('hidden');
+        currentCallId = null;
+    }, 300);
+}
+</script>
+
+<style>
+@keyframes slide-in-right {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slide-out-right {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes bounce-subtle {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out forwards;
+}
+
+.animate-slide-out-right {
+    animation: slide-out-right 0.3s ease-out forwards;
+}
+
+.animate-bounce-subtle {
+    animation: bounce-subtle 2s ease-in-out infinite;
+}
+</style>
 {% endblock %}
