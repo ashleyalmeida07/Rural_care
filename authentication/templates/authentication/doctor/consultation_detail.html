@@ -130,6 +130,60 @@
                         <i class="fas fa-notes-medical text-primary mr-2"></i>Medical Notes & Prescription
                     </h2>
                     
+                    
+                    <!-- Check if prescriptions exist -->
+                    {% if consultation.prescriptions.exists %}
+                    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 mb-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="font-semibold text-green-800 dark:text-green-300">
+                                <i class="fas fa-file-prescription mr-2"></i>Prescriptions ({{ consultation.prescriptions.count }})
+                            </p>
+                            <a href="{% url 'patient_portal:create_prescription' consultation.id %}" 
+                               class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-sm">
+                                <i class="fas fa-plus mr-1"></i>New Prescription
+                            </a>
+                        </div>
+                        <div class="space-y-2">
+                            {% for prescription in consultation.prescriptions.all %}
+                            <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-200 dark:border-green-700">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        {{ prescription.created_at|date:"M d, Y g:i A" }}
+                                        {% if prescription.is_verified %}
+                                        <i class="fas fa-shield-check text-green-600 ml-2" title="Blockchain Verified"></i>
+                                        {% endif %}
+                                    </p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ prescription.diagnosis|truncatewords:10 }}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <a href="{% url 'patient_portal:view_prescription' prescription.id %}" 
+                                       class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold">
+                                        <i class="fas fa-eye mr-1"></i>View
+                                    </a>
+                                    <a href="{% url 'patient_portal:download_prescription' prescription.id %}" 
+                                       class="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-xs font-semibold">
+                                        <i class="fas fa-download mr-1"></i>PDF
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Show prescription creation button if consultation is scheduled or completed -->
+                    {% if consultation.status == 'scheduled' or consultation.status == 'completed' %}
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-4">
+                        <p class="text-sm text-blue-700 dark:text-blue-400 mb-3">
+                            <i class="fas fa-info-circle mr-2"></i>Create a detailed prescription with medicines, dosages, and blockchain verification
+                        </p>
+                        <a href="{% url 'patient_portal:create_prescription' consultation.id %}" 
+                           class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">
+                            <i class="fas fa-file-prescription mr-2"></i>Create Prescription
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    
                     <div class="space-y-4">
                         <!-- Doctor's Notes -->
                         <div>
@@ -146,17 +200,18 @@
                             >{{ consultation.doctor_notes }}</textarea>
                         </div>
 
-                        <!-- Prescription -->
+                        <!-- Prescription (Legacy - kept for backward compatibility) -->
                         <div>
                             <label for="prescription" class="block text-sm font-medium text-foreground mb-2">
-                                Prescription
+                                Quick Prescription Notes
+                                <span class="text-xs text-muted-foreground ml-2">(For detailed prescription, use "Create Prescription" button above)</span>
                             </label>
                             <textarea 
                                 id="prescription" 
                                 name="prescription" 
-                                rows="6"
+                                rows="4"
                                 class="w-full px-4 py-3 bg-background border border-border/50 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-foreground"
-                                placeholder="Enter medication details, dosage, and instructions..."
+                                placeholder="Quick prescription notes..."
                                 {% if consultation.status == 'completed' and not request.user == consultation.doctor %}disabled{% endif %}
                             >{{ consultation.prescription }}</textarea>
                         </div>

@@ -14,12 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 class BlockchainService:
-    """Service to interact with MedicalAccessLogger smart contract"""
+    """Service to interact with MedicalAccessLogger and PrescriptionVerifier smart contracts"""
     
     def __init__(self):
         """Initialize blockchain connection"""
         self.w3 = None
         self.contract = None
+        self.prescription_contract = None
         self.account = None
         self.connected = False
         
@@ -44,28 +45,42 @@ class BlockchainService:
             
             self.account = self.w3.eth.account.from_key(private_key)
             
-            # Load contract
+            # Load QR code logging contract (MedicalAccessLogger)
             contract_address = getattr(settings, 'BLOCKCHAIN_CONTRACT_ADDRESS', None)
-            if not contract_address:
-                logger.warning("BLOCKCHAIN_CONTRACT_ADDRESS not configured - contract not deployed yet")
-                return
+            if contract_address:
+                # Try to load ABI for MedicalAccessLogger (if exists)
+                abi_path = Path(__file__).parent / 'medical_access_logger_abi.json'
+                if abi_path.exists():
+                    with open(abi_path, 'r') as f:
+                        abi = json.load(f)
+                    
+                    self.contract = self.w3.eth.contract(
+                        address=Web3.to_checksum_address(contract_address),
+                        abi=abi
+                    )
+                    logger.info(f"✓ MedicalAccessLogger contract loaded: {contract_address}")
+                else:
+                    logger.warning(f"MedicalAccessLogger ABI not found, QR logging disabled")
             
-            # Load ABI
-            abi_path = Path(__file__).parent / 'contract_abi.json'
-            if not abi_path.exists():
-                logger.error(f"Contract ABI not found at {abi_path}")
-                return
-            
-            with open(abi_path, 'r') as f:
-                abi = json.load(f)
-            
-            self.contract = self.w3.eth.contract(
-                address=Web3.to_checksum_address(contract_address),
-                abi=abi
-            )
+            # Load prescription verification contract (PrescriptionVerifier)
+            prescription_contract_address = getattr(settings, 'PRESCRIPTION_CONTRACT_ADDRESS', None)
+            if prescription_contract_address:
+                # Load ABI for PrescriptionVerifier (contract_abi.json is for PrescriptionVerifier)
+                abi_path = Path(__file__).parent / 'contract_abi.json'
+                if abi_path.exists():
+                    with open(abi_path, 'r') as f:
+                        abi = json.load(f)
+                    
+                    self.prescription_contract = self.w3.eth.contract(
+                        address=Web3.to_checksum_address(prescription_contract_address),
+                        abi=abi
+                    )
+                    logger.info(f"✓ PrescriptionVerifier contract loaded: {prescription_contract_address}")
+                else:
+                    logger.error(f"PrescriptionVerifier ABI not found at {abi_path}")
             
             self.connected = True
-            logger.info(f"✓ Blockchain service initialized - Contract: {contract_address}")
+            logger.info(f"✓ Blockchain service initialized")
             
         except Exception as e:
             logger.error(f"Failed to initialize blockchain service: {str(e)}")
@@ -315,6 +330,184 @@ class BlockchainService:
         except Exception as e:
             logger.error(f"Error getting total logs: {str(e)}")
             return 0
+    
+    def store_prescription_hash(self, prescription_id, pdf_hash, patient_id, doctor_id):
+        """
+        Store prescription PDF hash on blockchain for verification
+        
+        Args:
+            prescription_id: ID of prescription (UUID or integer)
+            pdf_hash: SHA-256 hash of PDF file (hex string)
+            patient_id: Patient's user ID
+            doctor_id: Doctor's user ID
+            
+        Returns:
+            dict with transaction details or None if failed
+        """
+        if not self.is_connected() or not self.prescription_contract:
+            logger.warning("Prescription contract not connected - prescription hash not stored")
+            return None
+        
+        try:
+            # Convert UUID to integer if needed
+            if isinstance(prescription_id, str):
+                # If it's a UUID string, convert to int
+                import uuid as uuid_lib
+                try:
+                    prescription_uuid = uuid_lib.UUID(str(prescription_id))
+                    prescription_id_int = prescription_uuid.int % (2**64)  # Use last 64 bits
+                except ValueError:
+                    # Not a UUID, try to convert directly
+                    prescription_id_int = int(prescription_id)
+            else:
+                prescription_id_int = int(prescription_id)
+            
+            # Convert PDF hash from hex string to bytes32
+            if isinstance(pdf_hash, str):
+                if pdf_hash.startswith('0x'):
+                    pdf_hash_bytes = bytes.fromhex(pdf_hash[2:])
+                else:
+                    pdf_hash_bytes = bytes.fromhex(pdf_hash)
+                pdf_hash_bytes32 = self.w3.to_bytes(hexstr=pdf_hash)
+            else:
+                pdf_hash_bytes32 = pdf_hash
+            
+            # Hash identifiers for privacy
+            doctor_hash = self._hash_identifier(doctor_id)
+            patient_hash = self._hash_identifier(patient_id)
+            
+            # Create metadata
+            metadata = json.dumps({
+                'type': 'prescription',
+                'prescription_id': str(prescription_id),  # Convert UUID to string
+            })
+            
+            # Build transaction
+            nonce = self.w3.eth.get_transaction_count(self.account.address)
+            
+            # Estimate gas
+            gas_estimate = self.prescription_contract.functions.storePrescription(
+                pdf_hash_bytes32,
+                doctor_hash,
+                patient_hash,
+                prescription_id_int,
+                metadata
+            ).estimate_gas({'from': self.account.address})
+            
+            # Build transaction with boosted gas for faster confirmation
+            base_gas_price = self.w3.eth.gas_price
+            boosted_gas_price = int(base_gas_price * 2)  # 2x gas price for faster confirmation
+            
+            transaction = self.prescription_contract.functions.storePrescription(
+                pdf_hash_bytes32,
+                doctor_hash,
+                patient_hash,
+                prescription_id_int,
+                metadata
+            ).build_transaction({
+                'chainId': self.w3.eth.chain_id,
+                'from': self.account.address,
+                'nonce': nonce,
+                'gas': int(gas_estimate * 1.5),  # Add 50% buffer for safety
+                'gasPrice': boosted_gas_price,  # 2x base price for priority
+            })
+            
+            # Sign transaction
+            signed_txn = self.w3.eth.account.sign_transaction(
+                transaction, 
+                private_key=self.account.key
+            )
+            
+            # Send transaction
+            tx_hash = self.w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+            
+            # Ensure tx_hash has 0x prefix for Etherscan
+            tx_hash_hex = tx_hash.hex() if tx_hash.hex().startswith('0x') else f"0x{tx_hash.hex()}"
+            logger.info(f"✓ Prescription {prescription_id} hash storage transaction sent - TX: {tx_hash_hex}")
+            
+            # Return immediately with tx hash (don't wait for confirmation)
+            result = {
+                'success': True,
+                'transaction_hash': tx_hash_hex,
+                'pending': True,
+                'explorer_url': f"https://sepolia.etherscan.io/tx/{tx_hash_hex}"
+            }
+            
+            # Try to get receipt (with short timeout for quick response)
+            try:
+                tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=5)
+                
+                # Update result with confirmed data
+                result.update({
+                    'pending': False,
+                    'block_number': tx_receipt.blockNumber,
+                    'gas_used': tx_receipt.gasUsed,
+                    'confirmed': True
+                })
+                logger.info(f"✓ Prescription transaction confirmed in block {tx_receipt.blockNumber}")
+                
+            except Exception as e:
+                # Transaction sent but not yet confirmed - that's OK!
+                logger.info(f"Prescription transaction pending confirmation: {tx_hash_hex}")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error storing prescription hash on blockchain: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def verify_prescription_hash(self, pdf_hash):
+        """
+        Verify if a prescription PDF hash exists on blockchain
+        
+        Args:
+            pdf_hash: SHA-256 hash of PDF file (hex string)
+            
+        Returns:
+            dict with verification details or None if not found
+        """
+        if not self.is_connected() or not self.prescription_contract:
+            logger.warning("Prescription contract not connected")
+            return None
+        
+        try:
+            # Convert PDF hash from hex string to bytes32
+            if isinstance(pdf_hash, str):
+                if pdf_hash.startswith('0x'):
+                    pdf_hash_bytes32 = self.w3.to_bytes(hexstr=pdf_hash)
+                else:
+                    pdf_hash_bytes32 = self.w3.to_bytes(hexstr='0x' + pdf_hash)
+            else:
+                pdf_hash_bytes32 = pdf_hash
+            
+            # Call verifyPrescription function
+            exists, timestamp, prescription_id = self.prescription_contract.functions.verifyPrescription(
+                pdf_hash_bytes32
+            ).call()
+            
+            if exists:
+                # Get full prescription details
+                record = self.prescription_contract.functions.getPrescription(pdf_hash_bytes32).call()
+                
+                return {
+                    'exists': True,
+                    'prescription_id': prescription_id,
+                    'timestamp': timestamp,
+                    'doctor_hash': record[1].hex(),
+                    'patient_hash': record[2].hex(),
+                    'metadata': record[6] if len(record) > 6 else ''
+                }
+            else:
+                return {
+                    'exists': False
+                }
+                
+        except Exception as e:
+            logger.error(f"Error verifying prescription hash: {str(e)}")
+            return None
 
 
 # Singleton instance
@@ -326,3 +519,9 @@ def get_blockchain_service():
     if _blockchain_service is None:
         _blockchain_service = BlockchainService()
     return _blockchain_service
+
+
+def store_prescription_hash(prescription_id, pdf_hash, patient_id, doctor_id):
+    """Convenience function to store prescription hash"""
+    service = get_blockchain_service()
+    return service.store_prescription_hash(prescription_id, pdf_hash, patient_id, doctor_id)

@@ -468,6 +468,9 @@ def consultation_detail(request, consultation_id):
         if request.POST.get('mark_completed'):
             consultation.status = 'completed'
             consultation.completed_at = timezone.now()
+            consultation.save()
+            messages.success(request, 'Consultation marked as completed successfully.')
+            return redirect('doctor_consultation_detail', consultation_id=consultation_id)
         
         consultation.save()
         messages.success(request, 'Consultation updated successfully.')

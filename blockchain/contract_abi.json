@@ -9,9 +9,9 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "uint256",
-        "name": "logId",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "pdfHash",
+        "type": "bytes32"
       },
       {
         "indexed": true,
@@ -28,17 +28,17 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "timestamp",
+        "name": "prescriptionId",
         "type": "uint256"
       },
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "accessGranted",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
       }
     ],
-    "name": "AccessLogged",
+    "name": "PrescriptionStored",
     "type": "event"
   },
   {
@@ -46,9 +46,9 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "uint256",
-        "name": "logId",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "pdfHash",
+        "type": "bytes32"
       },
       {
         "indexed": true,
@@ -58,121 +58,33 @@
       },
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "isValid",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
       }
     ],
-    "name": "AccessVerified",
+    "name": "PrescriptionVerified",
     "type": "event"
   },
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
       }
     ],
-    "name": "accessLogs",
+    "name": "doctorPrescriptions",
     "outputs": [
       {
         "internalType": "bytes32",
-        "name": "doctorHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "patientHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "accessHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bool",
-        "name": "accessGranted",
-        "type": "bool"
-      },
-      {
-        "internalType": "string",
-        "name": "ipfsMetadata",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "doctorLogs",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_logId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getAccessLog",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "doctorHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "patientHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "accessHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bool",
-        "name": "accessGranted",
-        "type": "bool"
-      },
-      {
-        "internalType": "string",
-        "name": "ipfsMetadata",
-        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -186,12 +98,12 @@
         "type": "bytes32"
       }
     ],
-    "name": "getDoctorLogs",
+    "name": "getDoctorPrescriptions",
     "outputs": [
       {
-        "internalType": "uint256[]",
-        "name": "logIds",
-        "type": "uint256[]"
+        "internalType": "bytes32[]",
+        "name": "hashes",
+        "type": "bytes32[]"
       }
     ],
     "stateMutability": "view",
@@ -205,25 +117,12 @@
         "type": "bytes32"
       }
     ],
-    "name": "getPatientLogs",
+    "name": "getPatientPrescriptions",
     "outputs": [
       {
-        "internalType": "uint256[]",
-        "name": "logIds",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getTotalLogs",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "count",
-        "type": "uint256"
+        "internalType": "bytes32[]",
+        "name": "hashes",
+        "type": "bytes32[]"
       }
     ],
     "stateMutability": "view",
@@ -233,44 +132,71 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "_doctorHash",
+        "name": "_pdfHash",
         "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_patientHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bool",
-        "name": "_accessGranted",
-        "type": "bool"
-      },
-      {
-        "internalType": "string",
-        "name": "_ipfsMetadata",
-        "type": "string"
       }
     ],
-    "name": "logAccess",
+    "name": "getPrescription",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "pdfHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "doctorHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "patientHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "prescriptionId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "exists",
+            "type": "bool"
+          },
+          {
+            "internalType": "string",
+            "name": "metadata",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct PrescriptionVerifier.PrescriptionRecord",
+        "name": "record",
+        "type": "tuple"
       }
     ],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "logCounter",
+    "name": "getStats",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "total",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "contractOwner",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -302,7 +228,108 @@
         "type": "uint256"
       }
     ],
-    "name": "patientLogs",
+    "name": "patientPrescriptions",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "prescriptions",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "pdfHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "doctorHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "patientHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "prescriptionId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "exists",
+        "type": "bool"
+      },
+      {
+        "internalType": "string",
+        "name": "metadata",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_pdfHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_doctorHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_patientHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_prescriptionId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_metadata",
+        "type": "string"
+      }
+    ],
+    "name": "storePrescription",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalPrescriptions",
     "outputs": [
       {
         "internalType": "uint256",
@@ -317,7 +344,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "newOwner",
+        "name": "_newOwner",
         "type": "address"
       }
     ],
@@ -329,27 +356,27 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_logId",
-        "type": "uint256"
-      },
-      {
         "internalType": "bytes32",
-        "name": "_doctorHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_patientHash",
+        "name": "_pdfHash",
         "type": "bytes32"
       }
     ],
-    "name": "verifyAccess",
+    "name": "verifyPrescription",
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "exists",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "prescriptionId",
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",

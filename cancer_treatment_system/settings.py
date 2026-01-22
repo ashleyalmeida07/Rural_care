@@ -165,7 +165,8 @@ SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
 # Blockchain Configuration (Ethereum Sepolia Testnet)
 ALCHEMY_RPC_URL = os.getenv('ALCHEMY_RPC_URL', 'https://eth-sepolia.g.alchemy.com/v2/ZAE-pO0igQ8nXoQXUiylr')
 BLOCKCHAIN_PRIVATE_KEY = os.getenv('BLOCKCHAIN_PRIVATE_KEY', '290493c95dfbcd38967f94a43bf16f4552abdf76ccfe4cc47652518963cf6bd8')
-BLOCKCHAIN_CONTRACT_ADDRESS = os.getenv('BLOCKCHAIN_CONTRACT_ADDRESS', '')  # Set after deployment
+BLOCKCHAIN_CONTRACT_ADDRESS = os.getenv('BLOCKCHAIN_CONTRACT_ADDRESS', '')  # MedicalAccessLogger (QR logging)
+PRESCRIPTION_CONTRACT_ADDRESS = os.getenv('PRESCRIPTION_CONTRACT_ADDRESS', '')  # PrescriptionVerifier
 BLOCKCHAIN_ENABLED = os.getenv('BLOCKCHAIN_ENABLED', 'True').lower() == 'true'
 
 # Email Configuration

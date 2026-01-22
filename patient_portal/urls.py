@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from . import consultation_views
 from . import call_views
+from . import prescription_views
 
 app_name = 'patient_portal'
 
@@ -51,6 +52,14 @@ urlpatterns = [
     path('call/<uuid:consultation_id>/answer/', call_views.send_answer, name='send_answer'),
     path('call/<uuid:consultation_id>/ice/', call_views.send_ice_candidate, name='send_ice_candidate'),
     path('call/<uuid:consultation_id>/agora-token/', call_views.get_agora_token, name='get_agora_token'),
+    
+    # Prescription Management
+    path('prescription/create/<uuid:consultation_id>/', prescription_views.create_prescription, name='create_prescription'),
+    path('prescription/<uuid:prescription_id>/edit/', prescription_views.edit_prescription, name='edit_prescription'),
+    path('prescription/<uuid:prescription_id>/generate/', prescription_views.generate_prescription_pdf, name='generate_prescription_pdf'),
+    path('prescription/<uuid:prescription_id>/', prescription_views.view_prescription, name='view_prescription'),
+    path('prescription/<uuid:prescription_id>/download/', prescription_views.download_prescription, name='download_prescription'),
+    path('prescription/<uuid:prescription_id>/verify/', prescription_views.verify_prescription, name='verify_prescription'),
     
     # API Endpoints
     path('api/alerts/count/', views.api_unread_alerts_count, name='api_alerts_count'),
