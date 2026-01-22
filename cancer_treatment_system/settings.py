@@ -224,3 +224,7 @@ SERVER_EMAIL = EMAIL_HOST_USER
 # Razorpay Payment Gateway Configuration
 RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', '')
 RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', '')
+
+# Agora Video Calling Configuration
+AGORA_APP_ID = os.getenv('AGORA_APP_ID', '')
+AGORA_APP_CERTIFICATE = os.getenv('AGORA_APP_CERTIFICATE', '')

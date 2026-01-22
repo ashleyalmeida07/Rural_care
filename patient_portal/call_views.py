@@ -6,11 +6,74 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.conf import settings
 from django.db.models import Q
 import json
+import os
+import time
 
 from .consultation_models import Consultation
 from authentication.models import User
+
+# Agora token generation
+try:
+    from agora_token_builder import RtcTokenBuilder
+    AGORA_AVAILABLE = True
+except ImportError:
+    AGORA_AVAILABLE = False
+
+
+@login_required
+def get_agora_token(request, consultation_id):
+    """Generate Agora RTC token for video/audio calls"""
+    # Get credentials from Django settings
+    agora_app_id = getattr(settings, 'AGORA_APP_ID', '')
+    agora_app_cert = getattr(settings, 'AGORA_APP_CERTIFICATE', '')
+    
+    if not AGORA_AVAILABLE:
+        return JsonResponse({'error': 'Agora SDK not installed'}, status=500)
+    
+    if not agora_app_id or not agora_app_cert:
+        return JsonResponse({'error': 'Agora credentials not configured'}, status=500)
+    
+    consultation = get_object_or_404(Consultation, id=consultation_id)
+    
+    # Check if user is part of this consultation
+    if request.user not in [consultation.patient, consultation.doctor]:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    # Channel name is the consultation ID
+    channel_name = str(consultation_id)
+    
+    # User ID (use a numeric hash of the user ID)
+    uid = abs(hash(str(request.user.id))) % (10 ** 9)
+    
+    # Token expires in 24 hours
+    expiration_time_in_seconds = 86400
+    current_timestamp = int(time.time())
+    privilege_expired_ts = current_timestamp + expiration_time_in_seconds
+    
+    # Role: 1 = publisher (can send audio/video)
+    role = 1
+    
+    try:
+        token = RtcTokenBuilder.buildTokenWithUid(
+            agora_app_id,
+            agora_app_cert,
+            channel_name,
+            uid,
+            role,
+            privilege_expired_ts
+        )
+        
+        return JsonResponse({
+            'token': token,
+            'channel': channel_name,
+            'uid': uid,
+            'appId': agora_app_id
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 @login_required

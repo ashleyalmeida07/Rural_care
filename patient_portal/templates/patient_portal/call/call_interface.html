@@ -103,5 +103,9 @@ const CONSULTATION_ID = '{{ consultation.id }}';
 const IS_VIDEO = {{ is_video|yesno:"true,false" }};
 const CSRF_TOKEN = '{{ csrf_token }}';
 </script>
-<script src="{% static 'patient_portal/webrtc_patient.js' %}"></script>
+<!-- Agora SDK -->
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
+<script src="{% static 'patient_portal/agora_patient.js' %}"></script>
+<!-- WebRTC implementation commented out - using Agora now -->
+<!-- <script src="{% static 'patient_portal/webrtc_patient.js' %}"></script> -->
 {% endblock %}

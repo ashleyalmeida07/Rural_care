@@ -50,6 +50,7 @@ urlpatterns = [
     path('call/<uuid:consultation_id>/offer/', call_views.send_offer, name='send_offer'),
     path('call/<uuid:consultation_id>/answer/', call_views.send_answer, name='send_answer'),
     path('call/<uuid:consultation_id>/ice/', call_views.send_ice_candidate, name='send_ice_candidate'),
+    path('call/<uuid:consultation_id>/agora-token/', call_views.get_agora_token, name='get_agora_token'),
     
     # API Endpoints
     path('api/alerts/count/', views.api_unread_alerts_count, name='api_alerts_count'),
