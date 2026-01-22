@@ -45,6 +45,7 @@ urlpatterns = [
     path('cancer-detection/', include('cancer_detection.urls')),
     path('clinical/', include('clinical_decision_support.urls')),
     path('portal/', include('patient_portal.urls')),
+    path('insurance/', include('Insurance_SIP.Insurance_SIP.urls')),
     
     # Evidence Traceability Engine - Root level HTML views
     path('evidence/search/', evidence_web_views.evidence_search, name='evidence_search'),

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ scheme.name }} - Insurance Portal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">{{ scheme.name }}</h2>
+                    <div class="mb-3">
+                        <span class="badge bg-primary">{{ scheme.get_scheme_type_display }}</span>
+                        {% if scheme.state %}<span class="badge bg-secondary">{{ scheme.state }}</span>{% endif %}
+                    </div>
+                    
+                    <h5 class="mt-4">Description</h5>
+                    <p>{{ scheme.description }}</p>
+                    
+                    <h5 class="mt-4">Coverage</h5>
+                    <p class="lead text-success">₹{{ scheme.coverage_amount|floatformat:0 }}</p>
+                    
+                    <h5 class="mt-4">Benefits</h5>
+                    <div>{{ scheme.benefits|linebreaks }}</div>
+                    
+                    <h5 class="mt-4">Required Documents</h5>
+                    <div>{{ scheme.required_documents|linebreaks }}</div>
+                    
+                    <h5 class="mt-4">Application Steps</h5>
+                    <div>{{ scheme.application_steps|linebreaks }}</div>
+                    
+                    {% if scheme.official_website %}
+                    <h5 class="mt-4">Official Website</h5>
+                    <p><a href="{{ scheme.official_website }}" target="_blank">{{ scheme.official_website }}</a></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            {% if eligibility %}
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Eligibility Criteria</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Age:</strong> {{ eligibility.min_age }} - {{ eligibility.max_age }} years</p>
+                    {% if eligibility.max_income %}
+                    <p><strong>Max Income:</strong> ₹{{ eligibility.max_income|floatformat:0 }} per year</p>
+                    {% endif %}
+                    {% if eligibility.state %}
+                    <p><strong>State:</strong> {{ eligibility.state }}</p>
+                    {% endif %}
+                    {% if eligibility.gender %}
+                    <p><strong>Gender:</strong> {{ eligibility.gender }}</p>
+                    {% endif %}
+                    {% if eligibility.additional_criteria %}
+                    <p><strong>Additional:</strong> {{ eligibility.additional_criteria }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if user.is_authenticated %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <a href="{% url 'insurance:apply_scheme' scheme.id %}" class="btn btn-success btn-lg w-100">
+                        Apply Now
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <p class="text-muted">Please login to apply</p>
+                    <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

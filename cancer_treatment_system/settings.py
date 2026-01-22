@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'cancer_detection',
     'clinical_decision_support',
     'patient_portal',
+    'Insurance_SIP.Insurance_SIP',
 ]
 
 MIDDLEWARE = [
@@ -219,3 +220,7 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'crce.10246.ceb@gmail.com')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'kexf yjjq svpk ewxc')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
+
+# Razorpay Payment Gateway Configuration
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', '')
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', '')
