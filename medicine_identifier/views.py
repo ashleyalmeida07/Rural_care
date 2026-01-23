@@ -121,14 +121,15 @@ def upload_medicine_image(request):
         try:
             start_time = time.time()
             
-            # Get image path
+            # Get image path - handle both local and cloud storage
             try:
                 image_path = identification.image.path
-            except NotImplementedError:
-                # Cloud storage - download to temporary file
+            except (NotImplementedError, ValueError):
+                # Cloud storage (Supabase) - download to temporary file
                 with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as tmp_file:
-                    identification.image.seek(0)
-                    tmp_file.write(identification.image.read())
+                    # Open the file from storage and read its contents
+                    with identification.image.open('rb') as img_file:
+                        tmp_file.write(img_file.read())
                     image_path = tmp_file.name
             
             # Step 1: OpenCV + OCR Analysis

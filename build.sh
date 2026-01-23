@@ -19,4 +19,8 @@ python manage.py collectstatic --noinput
 echo "Running migrations..."
 python manage.py migrate --noinput
 
+# Initialize Supabase storage bucket (for medicine images, etc.)
+echo "Initializing Supabase storage..."
+python manage.py init_supabase_storage || echo "Supabase storage initialization skipped (credentials may not be set)"
+
 echo "=== Build Complete ==="
