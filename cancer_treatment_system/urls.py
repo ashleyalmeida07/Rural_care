@@ -18,9 +18,34 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 from django.views.static import serve
+from django.db import connection
 import os
+
+
+def health_check(request):
+    """
+    Health check endpoint for Render and other deployment platforms.
+    Returns 200 OK if the application is healthy.
+    """
+    health_status = {
+        'status': 'healthy',
+        'app': 'rural-care',
+        'ml_features': getattr(settings, 'ML_FEATURES_ENABLED', False),
+    }
+    
+    # Check database connection
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT 1')
+        health_status['database'] = 'connected'
+    except Exception as e:
+        health_status['database'] = 'error'
+        health_status['database_error'] = str(e)
+        return JsonResponse(health_status, status=503)
+    
+    return JsonResponse(health_status, status=200)
 
 # Lazy import wrapper for evidence_web_views to avoid loading heavy ML libraries at startup
 def lazy_evidence_search(request):
@@ -52,6 +77,9 @@ def serve_media(request, path):
 
 
 urlpatterns = [
+    # Health check endpoint for Render
+    path('health/', health_check, name='health_check'),
+    
     path('admin/', admin.site.urls),
     path('', include('authentication.urls')),
     path('cancer-detection/', include('cancer_detection.urls')),

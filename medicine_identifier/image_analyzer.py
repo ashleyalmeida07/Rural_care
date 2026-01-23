@@ -188,7 +188,10 @@ class MedicineImageAnalyzer:
                     try:
                         pil_image = Image.open(image_path)
                         image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
-                    except:
+                    except Exception:
+                        results['errors'].append("Failed to load image")
+                        return results
+                else:
                     results['errors'].append("Failed to load image")
                     return results
             

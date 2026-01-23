@@ -8,10 +8,11 @@ databases:
 services:
   - type: web
     name: rural-care
-    runtime: docker
-    plan: starter  # Starter plan required for Docker with ML ($7/month, 512MB-2GB RAM)
+    runtime: python
+    plan: free
     region: oregon
-    dockerfilePath: ./Dockerfile
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn cancer_treatment_system.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -22,22 +23,14 @@ services:
       - key: DEBUG
         value: "False"
       - key: ML_FEATURES_ENABLED
-        value: "True"
+        value: "False"
+      - key: PYTHON_VERSION
+        value: "3.11.9"
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_KEY
         sync: false
       - key: SUPABASE_SERVICE_KEY
-        sync: false
-      - key: DB_NAME
-        sync: false
-      - key: DB_USER
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
-      - key: DB_HOST
-        sync: false
-      - key: DB_PORT
         sync: false
       - key: GROQ_API_KEY
         sync: false
@@ -50,7 +43,7 @@ services:
       - key: PRESCRIPTION_CONTRACT_ADDRESS
         sync: false
       - key: BLOCKCHAIN_ENABLED
-        sync: false
+        value: "True"
       - key: EMAIL_HOST_USER
         sync: false
       - key: EMAIL_HOST_PASSWORD

@@ -12,7 +12,13 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import dj_database_url
+
+# Try to import dj_database_url, but don't fail if not available
+try:
+    import dj_database_url
+    DJ_DATABASE_URL_AVAILABLE = True
+except ImportError:
+    DJ_DATABASE_URL_AVAILABLE = False
 
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -30,11 +36,14 @@ DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 # Render.com deployment settings
 RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-# Allow any .onrender.com subdomain
-ALLOWED_HOSTS.append('.onrender.com')
+
+# Allow custom domain if set
+CUSTOM_DOMAIN = os.getenv('CUSTOM_DOMAIN')
+if CUSTOM_DOMAIN:
+    ALLOWED_HOSTS.append(CUSTOM_DOMAIN)
 
 
 # Application definition
@@ -96,8 +105,9 @@ USE_LOCAL_DB = os.getenv('USE_LOCAL_DB', 'false').lower() == 'true'
 # Check for Render DATABASE_URL first (Render provides this automatically)
 DATABASE_URL = os.getenv('DATABASE_URL')
 
-if DATABASE_URL:
+if DATABASE_URL and DJ_DATABASE_URL_AVAILABLE:
     # Use Render's PostgreSQL database
+    import dj_database_url
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
@@ -183,23 +193,29 @@ SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY')
 SUPABASE_STORAGE_BUCKET = os.getenv('SUPABASE_STORAGE_BUCKET', 'media')
 
-# Site URL
-SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
+# Site URL - auto-detect for Render
+if RENDER_EXTERNAL_HOSTNAME:
+    SITE_URL = os.getenv('SITE_URL', f'https://{RENDER_EXTERNAL_HOSTNAME}')
+else:
+    SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
 
 # Blockchain Configuration (Ethereum Sepolia Testnet)
-ALCHEMY_RPC_URL = os.getenv('ALCHEMY_RPC_URL', 'https://eth-sepolia.g.alchemy.com/v2/ZAE-pO0igQ8nXoQXUiylr')
-BLOCKCHAIN_PRIVATE_KEY = os.getenv('BLOCKCHAIN_PRIVATE_KEY', '290493c95dfbcd38967f94a43bf16f4552abdf76ccfe4cc47652518963cf6bd8')
-BLOCKCHAIN_CONTRACT_ADDRESS = os.getenv('BLOCKCHAIN_CONTRACT_ADDRESS', '')  # MedicalAccessLogger (QR logging)
-PRESCRIPTION_CONTRACT_ADDRESS = os.getenv('PRESCRIPTION_CONTRACT_ADDRESS', '')  # PrescriptionVerifier
+# NOTE: Set these via environment variables in production
+ALCHEMY_RPC_URL = os.getenv('ALCHEMY_RPC_URL', '')
+BLOCKCHAIN_PRIVATE_KEY = os.getenv('BLOCKCHAIN_PRIVATE_KEY', '')
+BLOCKCHAIN_CONTRACT_ADDRESS = os.getenv('BLOCKCHAIN_CONTRACT_ADDRESS', '')
+PRESCRIPTION_CONTRACT_ADDRESS = os.getenv('PRESCRIPTION_CONTRACT_ADDRESS', '')
 BLOCKCHAIN_ENABLED = os.getenv('BLOCKCHAIN_ENABLED', 'True').lower() == 'true'
 
-# Email Configuration
+# Email Configuration (Gmail SMTP)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'crce.10246.ceb@gmail.com')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'kexf yjjqsvpk ewxc')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or 'noreply@example.com'
+SERVER_EMAIL = EMAIL_HOST_USER or 'noreply@example.com'
 
 # Session settings
 SESSION_COOKIE_AGE = 86400  # 24 hours
@@ -209,8 +225,8 @@ SESSION_SAVE_EVERY_REQUEST = True
 AUTH_USER_MODEL = 'authentication.User'
 
 # Login redirect URL for @login_required decorator
-LOGIN_URL = 'login'  # Redirects unauthenticated users to main login page
-LOGIN_REDIRECT_URL = 'patient_dashboard'  # Redirects to patient dashboard after successful login
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'patient_dashboard'
 
 # Media files (uploaded images)
 MEDIA_URL = '/media/'
@@ -225,26 +241,6 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
-
-# Alternative: Enable Supabase storage by uncommenting below and setting environment variables:
-# STORAGES = {
-#     "default": {
-#         "BACKEND": "authentication.supabase_storage.SupabaseStorage",
-#     },
-#     "staticfiles": {
-#         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-#     },
-# }
-
-# Email Configuration (Gmail SMTP)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'crce.10246.ceb@gmail.com')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'kexf yjjq svpk ewxc')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-SERVER_EMAIL = EMAIL_HOST_USER
 
 # Razorpay Payment Gateway Configuration
 RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', '')
@@ -280,3 +276,34 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
+if CUSTOM_DOMAIN:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{CUSTOM_DOMAIN}')
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+    },
+}
