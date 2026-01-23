@@ -9,7 +9,7 @@ echo "=== Rural Care Build Script ==="
 # Install Python dependencies
 echo "Installing dependencies..."
 pip install --upgrade pip
-pip install -r requirements-render.txt
+pip install -r requirements.txt
 
 # Collect static files
 echo "Collecting static files..."
