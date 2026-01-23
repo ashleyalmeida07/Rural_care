@@ -35,8 +35,8 @@ SECRET_KEY = os.getenv('SECRET_KEY') or 'django-insecure-riusr73mb#ywno9ycx@&yn!
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 # Render.com deployment settings
-RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME', 'ruralcare-kwvq.onrender.com')
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com', 'ruralcare-kwvq.onrender.com']
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
@@ -197,7 +197,7 @@ SUPABASE_STORAGE_BUCKET = os.getenv('SUPABASE_STORAGE_BUCKET', 'media')
 if RENDER_EXTERNAL_HOSTNAME:
     SITE_URL = os.getenv('SITE_URL', f'https://{RENDER_EXTERNAL_HOSTNAME}')
 else:
-    SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
+    SITE_URL = os.getenv('SITE_URL', 'https://ruralcare-kwvq.onrender.com')
 
 # Blockchain Configuration (Ethereum Sepolia Testnet)
 # NOTE: Set these via environment variables in production
@@ -273,6 +273,7 @@ if not DEBUG:
 # CSRF Trusted Origins for Render deployment
 CSRF_TRUSTED_ORIGINS = [
     'https://*.onrender.com',
+    'https://ruralcare-kwvq.onrender.com',
 ]
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
